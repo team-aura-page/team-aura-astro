@@ -1,17 +1,109 @@
 ---
-
+// 1. Importamos el "molde" que creamos antes
+import Layout from "../layouts/Layout.astro";
 ---
 
-<html lang="en">
-	<head>
-		<meta charset="utf-8" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<link rel="icon" href="/favicon.ico" />
-		<meta name="viewport" content="width=device-width" />
-		<meta name="generator" content={Astro.generator} />
-		<title>Astro</title>
-	</head>
-	<body>
-		<h1>Astro</h1>
-	</body>
-</html>
+<Layout title="Team Aura - Comunidad Shiny Hunters PokeMMO">
+	<header class="main-header">
+		<div class="logo-container">
+			<img
+				src="/icons/logotipo_aura.png"
+				alt="Logo Team Aura PokeMMO"
+				class="main-logo"
+			/>
+		</div>
+	</header>
+
+	<main class="content-container">
+		<section class="about-section">
+			<h2>Sobre nosotros</h2>
+			<p>
+				<strong>TEAM AURA</strong> es un equipo de <strong
+					>PokeMMO</strong
+				> (español / inglés) formado por personas respetuosas y agradables
+				que buscan divertirse en el juego realizando todo tipo de actividades.
+				Este equipo está casi completamente enfocado en el <strong
+					>shiny hunting</strong
+				> competitivo, aunque no descartamos el PvP en el futuro.
+			</p>
+			<br />
+			<p>
+				Cualquier persona apasionada por buscar <strong
+					>Pokémon Variocolor (Shiny)</strong
+				> puede unirse a nuestro equipo sin ningún problema. Si cumples los
+				requisitos, estaremos encantados de tenerte en nuestro equipo y buscar
+				Pokémon shiny juntos.
+			</p>
+		</section>
+
+		<section class="videos-section">
+			<h2 class="section-title">¡Último Vídeo!</h2>
+			<div class="video-container-wrapper">
+				<div class="video-responsive">
+					<iframe
+						src="https://www.youtube.com/embed/OHnsfVjjJTA"
+						title="Team Aura YouTube Video"
+						frameborder="0"
+						allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+						allowfullscreen
+					>
+					</iframe>
+				</div>
+			</div>
+		</section>
+
+		<section class="staff-section">
+			<h1 class="staff-title">STAFF</h1>
+
+			<div class="staff-grid">
+				<div class="staff-card lider-card" id="secret-trigger">
+					<div class="staff-avatar-container">
+						<img src="/icons/dark.png" alt="Avatar de DarkAngels" />
+					</div>
+					<h3>DarkAngels</h3>
+					<p class="role">Líder</p>
+				</div>
+
+				<div class="staff-card lider-card">
+					<div class="staff-avatar-container">
+						<img src="/icons/vital.png" alt="Avatar de VitalSnow" />
+					</div>
+					<h3>VitalSnow</h3>
+					<p class="role">Co-líder</p>
+				</div>
+
+				<div class="staff-card">
+					<div class="staff-avatar-container">
+						<img src="/icons/poli.png" alt="Avatar de Polimerasa" />
+					</div>
+					<h3>Polimerasa</h3>
+					<p class="role">Recruiter</p>
+				</div>
+
+				<div class="staff-card">
+					<div class="staff-avatar-container">
+						<img src="/icons/joker.png" alt="Avatar de Joker" />
+					</div>
+					<h3>Joker</h3>
+					<p class="role">Recruiter</p>
+				</div>
+
+				<div class="staff-card">
+					<div class="staff-avatar-container">
+						<img src="/icons/fernan.png" alt="Avatar de Fernan" />
+					</div>
+					<h3>Fernan</h3>
+					<p class="role">Recruiter</p>
+				</div>
+
+				<div class="staff-card">
+					<div class="staff-avatar-container">
+						<img src="/icons/jean.png" alt="Avatar de Jean" />
+					</div>
+					<h3>Jean</h3>
+					<p class="role">Recruiter</p>
+				</div>
+			</div>
+		</section>
+	</main>
+</Layout>
