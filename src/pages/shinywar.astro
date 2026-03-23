@@ -1,0 +1,68 @@
+---
+import Layout from "../layouts/Layout.astro";
+---
+
+<Layout title="ShinyWar - Team Aura" bodyClass="page-shinywar">
+    <main class="war-content">
+        <div class="war-scoreboard">
+            <div class="team-header team-a">
+                <h1 id="name-team-a">ARCHEOPS</h1>
+                <div class="score-box" id="score-team-a">0</div>
+            </div>
+
+            <div class="vs-badge">
+                <span>VS</span>
+            </div>
+
+            <div class="team-header team-b">
+                <h1 id="name-team-b">AERODACTYL</h1>
+                <div class="score-box" id="score-team-b">0</div>
+            </div>
+        </div>
+
+        <div class="war-bar-wrapper">
+            <div class="war-progress-container">
+                <div class="war-progress-bar" id="war-bar" style="width: 50%;">
+                </div>
+            </div>
+
+            <img
+                src="https://play.pokemonshowdown.com/sprites/gen5ani/archeops.gif"
+                class="war-sprite sprite-left"
+                alt="Archeops"
+            />
+
+            <img
+                src="https://play.pokemonshowdown.com/sprites/gen5ani/aerodactyl.gif"
+                class="war-sprite sprite-right"
+                alt="Aerodactyl"
+            />
+        </div>
+
+        <div class="war-grids-container">
+            <div class="team-column" id="col-team-a"></div>
+
+            <div class="team-column" id="col-team-b"></div>
+        </div>
+    </main>
+
+    <div id="war-modal" class="modal-overlay-war hidden">
+        <div class="modal-content-war">
+            <button class="modal-close" id="close-war-modal">×</button>
+
+            <div class="modal-header">
+                <img id="modal-avatar" src="" alt="Avatar" />
+                <h2 id="modal-name">Entrenador</h2>
+            </div>
+
+            <div class="modal-body">
+                <h3>Capturas</h3>
+                <div id="modal-list" class="capture-list"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        import "../scripts/shinywar.js";
+    </script>
+</Layout>

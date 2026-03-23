@@ -1,5 +1,6 @@
 import { initializeApp, getApps, getApp } from "firebase/app";
-import { getDatabase, ref, onValue } from "firebase/database";
+import { getDatabase, ref, onValue, get, update } from "firebase/database";
+import { getAuth, signInWithEmailAndPassword, onAuthStateChanged } from "firebase/auth";
 
 const firebaseConfig = {
     apiKey: import.meta.env.PUBLIC_FIREBASE_API_KEY,
@@ -14,5 +15,6 @@ const firebaseConfig = {
 // Anti-Crash SPA: Inicializar Firebase solo si no está inicializado ya
 const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
 const db = getDatabase(app);
+const auth = getAuth(app);
 
-export { db, ref, onValue };
+export { db, ref, onValue, get, update, auth, signInWithEmailAndPassword, onAuthStateChanged };

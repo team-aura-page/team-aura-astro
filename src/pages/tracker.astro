@@ -1,0 +1,71 @@
+---
+import Layout from "../layouts/Layout.astro";
+---
+
+<Layout title="Tracker - Team Aura" bodyClass="page-tracker">
+    <main class="tracker-content-container">
+        <div class="tracker-header-controls">
+            <h1 class="tracker-main-title">TRACKER MENSUAL</h1>
+
+            <button id="adminSaveBtn" style="display: none;">
+                💾 GUARDAR CAMBIOS
+            </button>
+
+            <div class="month-navigation-container">
+                <button id="prevMonthBtn" class="nav-arrow-btn">◀</button>
+                <h2 id="currentMonthDisplay" class="month-display-text">
+                    Cargando...
+                </h2>
+                <button id="nextMonthBtn" class="nav-arrow-btn">▶</button>
+            </div>
+        </div>
+
+        <div
+            class="tracker-stats-wrapper"
+            id="statsContainer"
+            style="display: flex; flex-direction: column; align-items: center; gap: 15px;"
+        >
+            <div class="tracker-stat-item">
+                <span style="margin: 0 10px;">Total del mes:</span>
+                <span
+                    id="totalCount"
+                    style="color: var(--gold); font-weight: bold;">0</span
+                >
+            </div>
+
+            <div id="leaderboard" class="tracker-leaderboard"></div>
+        </div>
+
+        <div id="trackerZones">
+            <div id="rareZone" style="display:none;">
+                <h2 class="rare-header">
+                    <img src="/icons/corona.png" class="rare-icon" alt="💎" />
+                    SHINIES RARES
+                    <img src="/icons/corona.png" class="rare-icon" alt="💎" />
+                </h2>
+                <div id="rareGrid" class="tracker-grid-container"></div>
+            </div>
+
+            <div id="normalZone">
+                <h2
+                    id="normalTitle"
+                    style="display:none; color: #aaa; text-align: center; font-size: 1rem; margin-bottom: 20px;"
+                >
+                    ⬇️ Shinies Normales ⬇️
+                </h2>
+
+                <div id="trackerGrid" class="tracker-grid-container">
+                    <div
+                        style="grid-column: 1/-1; text-align: center; color: #666; padding: 50px;"
+                    >
+                        Cargando datos de la nube...
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        import "../scripts/tracker.js";
+    </script>
+</Layout>

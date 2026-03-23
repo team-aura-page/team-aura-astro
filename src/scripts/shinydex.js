@@ -175,27 +175,35 @@ function showTooltip(e) {
     if (!ownersData || !tooltipElement) return;
 
     const owners = JSON.parse(ownersData);
-    const ownersList = owners.map(o => `<li>${o}</li>`).join("");
 
-    tooltipElement.innerHTML = `
-        <span class="tooltip-title">Capturado por (${owners.length})</span>
-        <div class="tooltip-scroll-mask">
-            <ul class="tooltip-names">
-                ${ownersList}
-            </ul>
-        </div>
-    `;
+    // Construir tooltip de forma segura contra XSS
+    tooltipElement.innerHTML = '';
 
-    const listElement = tooltipElement.querySelector('.tooltip-names');
+    const titleSpan = document.createElement('span');
+    titleSpan.className = 'tooltip-title';
+    titleSpan.textContent = `Capturado por (${owners.length})`;
+
+    const scrollMask = document.createElement('div');
+    scrollMask.className = 'tooltip-scroll-mask';
+
+    const ul = document.createElement('ul');
+    ul.className = 'tooltip-names';
+
+    owners.forEach(o => {
+        const li = document.createElement('li');
+        li.textContent = o;
+        ul.appendChild(li);
+    });
 
     if (owners.length > 3) {
-        listElement.classList.add('scrolling');
+        ul.classList.add('scrolling');
         const duration = 2 + (owners.length * 0.8);
-        listElement.style.animationDuration = `${duration}s`;
-    } else {
-        listElement.classList.remove('scrolling');
-        listElement.style.animationDuration = '0s';
+        ul.style.animationDuration = `${duration}s`;
     }
+
+    scrollMask.appendChild(ul);
+    tooltipElement.appendChild(titleSpan);
+    tooltipElement.appendChild(scrollMask);
 
     tooltipElement.classList.add('visible');
     moveTooltip(e);
