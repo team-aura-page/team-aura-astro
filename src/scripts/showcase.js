@@ -1,16 +1,4 @@
-import { initializeApp, getApps, getApp } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-app.js";
-import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-database.js";
-
-// 1. Ciberseguridad: Claves protegidas (Astro las inyectará al compilar)
-const firebaseConfig = {
-    apiKey: import.meta.env.PUBLIC_FIREBASE_API_KEY,
-    authDomain: import.meta.env.PUBLIC_FIREBASE_AUTH_DOMAIN,
-    databaseURL: "https://page-aura-default-rtdb.europe-west1.firebasedatabase.app", // Esta puede ser pública
-    projectId: import.meta.env.PUBLIC_FIREBASE_PROJECT_ID,
-    storageBucket: import.meta.env.PUBLIC_FIREBASE_STORAGE_BUCKET,
-    messagingSenderId: import.meta.env.PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
-    appId: import.meta.env.PUBLIC_FIREBASE_APP_ID
-};
+import { db, ref, onValue } from "../lib/firebase.js";
 
 const REPO_URL = "https://raw.githubusercontent.com/team-aura-page/TeamAura/main/";
 const URL_SHINY = "https://play.pokemonshowdown.com/sprites/gen5ani-shiny/";
@@ -31,9 +19,12 @@ const ICON_URLS = {
     "swarm": fixPath("icons/swarm.png")
 };
 
-// 2. Anti-Crash SPA: Inicializar Firebase solo si no está inicializado ya
-const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
-const db = getDatabase(app);
+// Función de escape HTML para prevenir XSS (#3)
+function escapeHTML(str) {
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+}
 
 // Mantener los datos en caché para no pedir a la base de datos al cambiar de pestaña
 let allPlayersData = [];
@@ -55,7 +46,11 @@ onValue(usersRef, (snapshot) => {
 // Evitar que el evento del teclado 'Escape' se acumule
 let isEscListenerAdded = false;
 
-// 3. EVENTO MÁGICO DE ASTRO: Se ejecuta cada vez que el usuario entra al Showcase
+// Funciones del modal como closures en vez de window globals (#13)
+let openModal = null;
+let closeModalAction = null;
+
+// EVENTO MÁGICO DE ASTRO: Se ejecuta cada vez que el usuario entra al Showcase
 document.addEventListener('astro:page-load', () => {
     const grid = document.getElementById('showcase-grid');
     // Si estamos en la página de inicio, detenemos la ejecución de este bloque
@@ -71,13 +66,23 @@ document.addEventListener('astro:page-load', () => {
         renderShowcase(allPlayersData);
     }
 
-    // Reconectar eventos
-    if (searchInput) searchInput.addEventListener('input', handleFilters);
-    if (sortSelect) sortSelect.addEventListener('change', handleFilters);
+    // Reconectar eventos sin duplicarlos (#14) — clonar nodos para limpiar listeners previos
+    if (searchInput) {
+        const newSearchInput = searchInput.cloneNode(true);
+        searchInput.parentNode.replaceChild(newSearchInput, searchInput);
+        newSearchInput.addEventListener('input', handleFilters);
+    }
+    if (sortSelect) {
+        const newSortSelect = sortSelect.cloneNode(true);
+        sortSelect.parentNode.replaceChild(newSortSelect, sortSelect);
+        newSortSelect.addEventListener('change', handleFilters);
+    }
 
     function handleFilters() {
-        const searchText = searchInput?.value.toLowerCase() || '';
-        const sortValue = sortSelect?.value || 'default';
+        const currentSearchInput = document.getElementById('search-input');
+        const currentSortSelect = document.getElementById('sort-select');
+        const searchText = currentSearchInput?.value.toLowerCase() || '';
+        const sortValue = currentSortSelect?.value || 'default';
         let filteredList = [...allPlayersData];
 
         if (searchText) {
@@ -98,10 +103,10 @@ document.addEventListener('astro:page-load', () => {
         renderShowcase(filteredList);
     }
 
-    // Lógica del Modal atada a la vista actual
-    window.openModal = function (jugador) {
+    // Lógica del Modal (#13: no más window.openModal)
+    openModal = function (jugador) {
         if (!modal) return;
-        document.getElementById('modal-name').innerText = jugador.nombre;
+        document.getElementById('modal-name').textContent = escapeHTML(jugador.nombre);
         document.getElementById('modal-avatar').src = fixPath(jugador.avatar);
 
         const teamGrid = document.getElementById('modal-team');
@@ -120,6 +125,8 @@ document.addEventListener('astro:page-load', () => {
             imgPoke.src = `${URL_SHINY}${nameClean}.gif`;
             imgPoke.alt = nameClean;
             imgPoke.className = 'poke-base-sprite';
+            // Fallback para imágenes externas (#19)
+            imgPoke.onerror = () => { imgPoke.style.opacity = '0.3'; };
 
             if (poke.safari === "flee") {
                 imgPoke.classList.add('poke-fled');
@@ -149,7 +156,7 @@ document.addEventListener('astro:page-load', () => {
         setTimeout(() => { modal.classList.add('active'); }, 10);
     };
 
-    window.closeModalAction = function () {
+    closeModalAction = function () {
         document.body.classList.remove('no-scroll');
         if (modal) {
             modal.classList.remove('active');
@@ -157,15 +164,15 @@ document.addEventListener('astro:page-load', () => {
         }
     };
 
-    if (closeBtn) closeBtn.addEventListener('click', window.closeModalAction);
+    if (closeBtn) closeBtn.addEventListener('click', closeModalAction);
     if (modal) {
         modal.addEventListener('click', (e) => {
-            if (e.target === modal) window.closeModalAction();
+            if (e.target === modal) closeModalAction();
         });
     }
     if (!isEscListenerAdded) {
         document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape' && window.closeModalAction) window.closeModalAction();
+            if (e.key === 'Escape' && closeModalAction) closeModalAction();
         });
         isEscListenerAdded = true;
     }
@@ -178,7 +185,10 @@ function renderShowcase(jugadores) {
     grid.innerHTML = '';
 
     if (jugadores.length === 0) {
-        grid.innerHTML = '<p style="color: #666; font-size: 1.2rem; grid-column: 1/-1;">No se encontraron entrenadores.</p>';
+        const emptyMsg = document.createElement('p');
+        emptyMsg.textContent = 'No se encontraron entrenadores.';
+        emptyMsg.style.cssText = 'color: #666; font-size: 1.2rem; grid-column: 1/-1;';
+        grid.appendChild(emptyMsg);
         return;
     }
 
@@ -209,15 +219,27 @@ function renderShowcase(jugadores) {
 
         const avatarUrl = fixPath(jugador.avatar);
 
-        card.innerHTML = `
-            <div class="staff-avatar-container">
-                <img src="${avatarUrl}" alt="${jugador.nombre}">
-            </div>
-            <h3>${jugador.nombre}</h3>
-            <p class="shiny-counter ${rankClass}">${cantidadShinys} shinies</p>
-        `;
+        // Construimos el contenido de la tarjeta de forma segura (#3: sin innerHTML con datos de usuario)
+        const avatarContainer = document.createElement('div');
+        avatarContainer.className = 'staff-avatar-container';
+        const avatarImg = document.createElement('img');
+        avatarImg.src = avatarUrl;
+        avatarImg.alt = escapeHTML(jugador.nombre);
+        avatarImg.onerror = () => { avatarImg.src = fixPath(null); }; // Fallback (#19)
+        avatarContainer.appendChild(avatarImg);
 
-        card.onclick = () => window.openModal(jugador);
+        const nameH3 = document.createElement('h3');
+        nameH3.textContent = jugador.nombre; // textContent = seguro contra XSS
+
+        const counterP = document.createElement('p');
+        counterP.className = `shiny-counter ${rankClass}`;
+        counterP.textContent = `${cantidadShinys} shinies`;
+
+        card.appendChild(avatarContainer);
+        card.appendChild(nameH3);
+        card.appendChild(counterP);
+
+        card.onclick = () => openModal(jugador);
         fragment.appendChild(card);
     });
 

@@ -931,7 +931,7 @@ h4 {
 }
 
 #search {
-    width: 600px;
+    width: 100%;
     max-width: 420px;
     padding: 12px 15px;
     border-radius: 8px;

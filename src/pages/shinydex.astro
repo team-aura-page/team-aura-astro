@@ -1,0 +1,30 @@
+---
+import Layout from "../layouts/Layout.astro";
+---
+
+<Layout title="ShinyDex - Team Aura" bodyClass="page-shinydex">
+    <main class="shinydex-content">
+        <div class="shinydex-header-container">
+            <div class="controls-row">
+                <div class="search-wrapper">
+                    <input
+                        type="text"
+                        id="search"
+                        placeholder="Buscar Pokémon, Nº o Entrenador..."
+                    />
+                </div>
+                <span id="shiny-counter">0 / 0</span>
+            </div>
+        </div>
+
+        <div class="shinydex-body">
+            <div id="shinydex-main" class="shinydex-main"></div>
+
+            <aside id="shinydex-index" class="shinydex-index"></aside>
+        </div>
+    </main>
+
+    <script>
+        import "../scripts/shinydex.js";
+    </script>
+</Layout>

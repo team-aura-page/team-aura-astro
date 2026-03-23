@@ -1,5 +1,4 @@
 ---
-// 1. Importamos el "molde" que creamos antes
 import Layout from "../layouts/Layout.astro";
 ---
 
@@ -19,6 +18,9 @@ import Layout from "../layouts/Layout.astro";
 
 	<main class="content-container">
 		<section class="about-section">
+			<h1 class="visually-hidden">
+				Team Aura - Comunidad Shiny Hunters PokeMMO
+			</h1>
 			<h2>Sobre nosotros</h2>
 			<p>
 				<strong>TEAM AURA</strong> es un equipo de <strong
@@ -46,9 +48,10 @@ import Layout from "../layouts/Layout.astro";
 					<iframe
 						src="https://www.youtube.com/embed/OHnsfVjjJTA"
 						title="Team Aura YouTube Video"
-						frameborder="0"
 						allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
 						allowfullscreen
+						loading="lazy"
+						style="border:none;"
 					>
 					</iframe>
 				</div>
@@ -56,7 +59,7 @@ import Layout from "../layouts/Layout.astro";
 		</section>
 
 		<section class="staff-section">
-			<h1 class="staff-title">STAFF</h1>
+			<h2 class="staff-title">STAFF</h2>
 
 			<div class="staff-grid">
 				<div class="staff-card lider-card" id="secret-trigger">
@@ -110,3 +113,17 @@ import Layout from "../layouts/Layout.astro";
 		</section>
 	</main>
 </Layout>
+
+<style>
+	.visually-hidden {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		padding: 0;
+		margin: -1px;
+		overflow: hidden;
+		clip: rect(0, 0, 0, 0);
+		white-space: nowrap;
+		border: 0;
+	}
+</style>
