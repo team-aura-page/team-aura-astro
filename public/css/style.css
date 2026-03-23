@@ -43,7 +43,7 @@ input[type="checkbox"],
 
 @font-face {
     font-family: 'PokemonFireRed';
-    src: url('../font/bwfont.otf') format('opentype');
+    src: url('/font/bwfont.otf') format('opentype');
     font-weight: normal;
     font-style: normal;
 }

@@ -1,9 +1,8 @@
 ---
-// Aquí arriba va el Javascript de servidor de Astro (entre los guiones).
-// Recibimos el título como variable para que cada página tenga el suyo.
-const { title } = Astro.props;
+import { ClientRouter } from "astro:transitions";
+import Stars from "../components/Stars.astro";
 
-// Obtenemos la URL actual para saber qué botón del menú debe estar "activo"
+const { title, bodyClass } = Astro.props;
 const currentPath = Astro.url.pathname;
 ---
 
@@ -12,19 +11,17 @@ const currentPath = Astro.url.pathname;
     <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
         <title>{title}</title>
-
+        <ClientRouter />
         <meta
             name="description"
             content="Web oficial del Team Aura en PokeMMO. Ranking de Shinys, ShinyWar, Tracker y utilidades para entrenadores."
         />
-
         <link rel="stylesheet" href="/css/style.css" />
         <link rel="icon" type="image/x-icon" href="/icons/favicon.ico" />
     </head>
 
-    <body>
+    <body class={bodyClass}>
         <nav class="main-nav">
             <a
                 href="/"
@@ -75,7 +72,7 @@ const currentPath = Astro.url.pathname;
 
         <slot />
 
-        <script src="/js/cursors.js" is:inline></script>
-        <script src="/js/stars.js" is:inline></script>
+        <Stars />
+        <script src="/js/cursors.js" is:inline data-astro-rerun></script>
     </body>
 </html>

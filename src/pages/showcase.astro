@@ -1,0 +1,97 @@
+---
+import Layout from "../layouts/Layout.astro";
+---
+
+<Layout title="Showcase - Team Aura" bodyClass="page-showcase">
+    <main class="content-container">
+        <div class="filters-container">
+            <input
+                type="text"
+                id="search-input"
+                placeholder="Buscar entrenador..."
+            />
+            <select id="sort-select">
+                <option value="default">Orden original</option>
+                <option value="desc">Más shinies (Desc)</option>
+                <option value="asc">Menos shinies (Asc)</option>
+            </select>
+        </div>
+        <div id="showcase-grid" class="staff-grid"></div>
+    </main>
+
+    <div id="modal-overlay" class="modal-overlay hidden">
+        <div class="modal-content">
+            <span id="close-btn" class="close-btn">&times;</span>
+
+            <div class="modal-header-redesigned">
+                <div class="modal-avatar-wrapper">
+                    <img id="modal-avatar" src="" alt="Avatar" />
+                </div>
+
+                <h2 id="modal-name" class="modal-title-large">Nombre</h2>
+
+                <aside class="legend-sidebar">
+                    <h4>LEYENDA</h4>
+                    <div class="sidebar-item">
+                        <img
+                            src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/helix-fossil.png"
+                            class="sidebar-icon"
+                            alt="Fossil"
+                        />
+                        <span>FOSSIL SHINY</span>
+                    </div>
+                    <div class="sidebar-item">
+                        <img
+                            src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/safari-ball.png"
+                            class="sidebar-icon"
+                            alt="Safari"
+                        />
+                        <span>SAFARI ZONE</span>
+                    </div>
+                    <div class="sidebar-item">
+                        <img
+                            src="/icons/secretshiny.png"
+                            class="sidebar-icon"
+                            alt="Secret"
+                        />
+                        <span>SECRET SHINY</span>
+                    </div>
+                    <div class="sidebar-item">
+                        <img
+                            src="/icons/alfa.png"
+                            class="sidebar-icon"
+                            alt="Alpha"
+                        />
+                        <span>ALPHA SHINY</span>
+                    </div>
+                    <div class="sidebar-item">
+                        <img
+                            src="/icons/eggshiny.png"
+                            class="sidebar-icon"
+                            alt="Egg"
+                        />
+                        <span>EGG SHINY</span>
+                    </div>
+                    <div class="sidebar-item">
+                        <img
+                            src="/icons/swarm.png"
+                            class="sidebar-icon"
+                            alt="Swarm"
+                        />
+                        <span>SWARM SHINY</span>
+                    </div>
+                </aside>
+            </div>
+
+            <hr class="modal-divider" />
+
+            <div class="modal-body-wrapper">
+                <div id="modal-team" class="pokemon-team-grid"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        import "../scripts/showcase.js";
+    </script>
+</Layout>

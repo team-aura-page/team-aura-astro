@@ -1,0 +1,51 @@
+---
+---
+
+<script>
+  function initStars() {
+    let container = document.getElementById('stars-container');
+
+    // Setup the container outside of the body if it doesn't exist
+    // By appending to documentElement, Astro's view transitions (which replace document.body)
+    // will leave this element entirely untouched. This prevents CSS animations from resetting!
+    if (!container) {
+      container = document.createElement('div');
+      container.id = 'stars-container';
+      
+      // We apply smooth transition for fading in and out between pages
+      container.style.transition = 'opacity 0.6s ease-in-out';
+
+      const numStars = 150;
+      for (let i = 0; i < numStars; i++) {
+        const star = document.createElement('div');
+        const sizeClass = Math.random() < 0.5 ? 'small' : (Math.random() < 0.8 ? 'medium' : 'large');
+        star.classList.add('star', sizeClass);
+        
+        star.style.left = `${Math.random() * 100}%`;
+        star.style.top = `${Math.random() * 100}%`;
+        
+        const duration = Math.random() * 3 + 2; 
+        const delay = Math.random() * 5; 
+        
+        star.style.animationDuration = `${duration}s`;
+        star.style.animationDelay = `${delay}s`;
+        
+        container.appendChild(star);
+      }
+      
+      // Append to html to survive body swap
+      document.documentElement.insertBefore(container, document.body);
+    }
+
+    // Toggle visibility seamlessly using opacity based on the page type
+    if (document.body.classList.contains('page-shinywar')) {
+      container.style.opacity = '0'; 
+      // Optionally disable pointer events if needed, but it already has pointer-events: none in CSS
+    } else {
+      container.style.opacity = '1';
+    }
+  }
+
+  // Hook into Astro's View Transitions to run on initial load and every navigation
+  document.addEventListener('astro:page-load', initStars);
+</script>
