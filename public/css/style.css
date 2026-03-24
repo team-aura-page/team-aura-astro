@@ -46,6 +46,7 @@ input[type="checkbox"],
     src: url('/font/bwfont.otf') format('opentype');
     font-weight: normal;
     font-style: normal;
+    font-display: swap;
 }
 
 html,
@@ -677,7 +678,8 @@ h4 {
     display: none !important;
 }
 
-.no-scroll {
+html.no-scroll,
+body.no-scroll {
     overflow: hidden;
 }
 

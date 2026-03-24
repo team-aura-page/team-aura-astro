@@ -1,11 +1,5 @@
 import { db, ref, onValue } from "../lib/firebase.js";
-
-// Función de escape HTML para prevenir XSS
-function escapeHTML(str) {
-    const div = document.createElement('div');
-    div.textContent = str;
-    return div.innerHTML;
-}
+import { escapeHTML } from "../lib/utils.js";
 const warsRef = ref(db, 'wars');
 
 // Caché global para transiciones instantáneas
@@ -250,7 +244,10 @@ function openModal(player) {
     listContainer.innerHTML = '';
 
     if (!player.captures || player.captures.length === 0) {
-        listContainer.innerHTML = '<p style="text-align:center; color:#666; padding: 20px;">Sin capturas registradas.</p>';
+        const emptyP = document.createElement('p');
+        emptyP.style.cssText = 'text-align:center; color:#666; padding: 20px;';
+        emptyP.textContent = 'Sin capturas registradas.';
+        listContainer.appendChild(emptyP);
     } else {
         const sortedCaptures = [...player.captures].reverse();
 

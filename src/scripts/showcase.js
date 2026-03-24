@@ -1,4 +1,5 @@
 import { db, ref, onValue } from "../lib/firebase.js";
+import { escapeHTML } from "../lib/utils.js";
 
 const REPO_URL = "https://raw.githubusercontent.com/team-aura-page/TeamAura/main/";
 const URL_SHINY = "https://play.pokemonshowdown.com/sprites/gen5ani-shiny/";
@@ -19,12 +20,9 @@ const ICON_URLS = {
     "swarm": fixPath("icons/swarm.png")
 };
 
-// Función de escape HTML para prevenir XSS (#3)
-function escapeHTML(str) {
-    const div = document.createElement('div');
-    div.textContent = str;
-    return div.innerHTML;
-}
+// Precargamos el sparkle compartido una sola vez
+new Image().src = fixPath('icons/sparkle.gif');
+const preloadedPlayers = new Set();
 
 // Mantener los datos en caché para no pedir a la base de datos al cambiar de pestaña
 let allPlayersData = [];
@@ -39,7 +37,7 @@ onValue(usersRef, (snapshot) => {
     // Si la tabla del showcase está en pantalla ahora mismo, la actualizamos
     if (document.getElementById('showcase-grid')) {
         renderShowcase(allPlayersData);
-        setTimeout(() => preloadAllImages(allPlayersData), 500);
+
     }
 });
 
@@ -151,12 +149,14 @@ document.addEventListener('astro:page-load', () => {
         });
 
         teamGrid.appendChild(fragment);
+        document.documentElement.classList.add('no-scroll');
         document.body.classList.add('no-scroll');
         modal.classList.remove('hidden');
         setTimeout(() => { modal.classList.add('active'); }, 10);
     };
 
     closeModalAction = function () {
+        document.documentElement.classList.remove('no-scroll');
         document.body.classList.remove('no-scroll');
         if (modal) {
             modal.classList.remove('active');
@@ -239,35 +239,18 @@ function renderShowcase(jugadores) {
         card.appendChild(nameH3);
         card.appendChild(counterP);
 
+        card.onmouseenter = () => {
+            if (preloadedPlayers.has(jugador.nombre)) return;
+            preloadedPlayers.add(jugador.nombre);
+            (jugador.equipo || []).forEach(poke => {
+                if (poke.live === 'no') return;
+                const img = new Image();
+                img.src = `${URL_SHINY}${(poke.pokemon || 'unknown').toLowerCase().trim()}.gif`;
+            });
+        };
         card.onclick = () => openModal(jugador);
         fragment.appendChild(card);
     });
 
     grid.appendChild(fragment);
-}
-
-function preloadAllImages(jugadores) {
-    if (!Array.isArray(jugadores)) return;
-    const imagesToLoad = new Set();
-    imagesToLoad.add(fixPath('icons/sparkle.gif'));
-
-    jugadores.forEach(jugador => {
-        if (jugador.avatar) imagesToLoad.add(fixPath(jugador.avatar));
-        const equipo = jugador.equipo || [];
-        equipo.forEach(poke => {
-            if (poke.live === 'no') return;
-            const nameClean = (poke.pokemon || 'unknown').toLowerCase().trim();
-            imagesToLoad.add(`${URL_SHINY}${nameClean}.gif`);
-            if (poke.icono && ICON_URLS[poke.icono]) {
-                imagesToLoad.add(ICON_URLS[poke.icono]);
-            }
-        });
-    });
-
-    setTimeout(() => {
-        imagesToLoad.forEach(url => {
-            const img = new Image();
-            img.src = url;
-        });
-    }, 1000);
 }

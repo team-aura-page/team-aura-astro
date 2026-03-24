@@ -142,6 +142,19 @@ function getColorByPercentage(percent) {
 
 function animateValue(element, start, end, duration, isGlobal = false, currentObtained = 0, total = 0) {
     let startTimestamp = null;
+
+    let percSpan, countWrapper;
+    if (isGlobal) {
+        element.textContent = '';
+        element.appendChild(document.createTextNode(`${currentObtained} / ${total} `));
+        percSpan = document.createElement('span');
+        percSpan.className = 'percentage-text';
+        element.appendChild(percSpan);
+    } else {
+        countWrapper = element.querySelector('.count-wrapper');
+        percSpan = element.querySelector('.percentage-text');
+    }
+
     const step = (timestamp) => {
         if (!startTimestamp) startTimestamp = timestamp;
         const progress = Math.min((timestamp - startTimestamp) / duration, 1);
@@ -150,11 +163,10 @@ function animateValue(element, start, end, duration, isGlobal = false, currentOb
 
         if (isGlobal) {
             element.style.color = currentColor;
-            element.innerHTML = `${currentObtained} / ${total} <span class="percentage-text" style="color: ${currentColor}">${currentPercent}%</span>`;
+            percSpan.style.color = currentColor;
+            percSpan.textContent = `${currentPercent}%`;
         } else {
-            const wrapper = element.querySelector('.count-wrapper');
-            const percSpan = element.querySelector('.percentage-text');
-            if (wrapper) wrapper.style.color = currentColor;
+            if (countWrapper) countWrapper.style.color = currentColor;
             if (percSpan) percSpan.textContent = `${currentPercent}%`;
         }
 
@@ -262,13 +274,25 @@ function initShinyDex(dexData) {
             card.className = `shiny-card ${statusClass}`;
             card.dataset.searchKey = `${formatName(pokeObj.name).toLowerCase()} #${String(pokeObj.id).padStart(3, "0")}`;
 
-            card.innerHTML = `
-                <span class="poke-number">#${String(pokeObj.id).padStart(3, "0")}</span>
-                <div class="sprite-wrapper">
-                    <img src="${URL_SHINY}${pokeObj.name}.gif" loading="lazy" alt="${pokeObj.name}">
-                </div>
-                <span class="poke-name">${formatName(pokeObj.name)}</span>
-            `;
+            const pokeNumber = document.createElement('span');
+            pokeNumber.className = 'poke-number';
+            pokeNumber.textContent = `#${String(pokeObj.id).padStart(3, "0")}`;
+
+            const spriteWrapper = document.createElement('div');
+            spriteWrapper.className = 'sprite-wrapper';
+            const spriteImg = document.createElement('img');
+            spriteImg.src = `${URL_SHINY}${pokeObj.name}.gif`;
+            spriteImg.loading = 'lazy';
+            spriteImg.alt = pokeObj.name;
+            spriteWrapper.appendChild(spriteImg);
+
+            const pokeNameSpan = document.createElement('span');
+            pokeNameSpan.className = 'poke-name';
+            pokeNameSpan.textContent = formatName(pokeObj.name);
+
+            card.appendChild(pokeNumber);
+            card.appendChild(spriteWrapper);
+            card.appendChild(pokeNameSpan);
 
             if (owners.length > 0 && status === 'normal') {
                 card.dataset.owners = JSON.stringify(owners);
@@ -283,9 +307,18 @@ function initShinyDex(dexData) {
         const title = document.createElement("h3");
         title.className = "gen-title";
         const percentGen = Math.round((genCaptured / genPokemonList.length) * 100);
-        title.innerHTML = `${gen.label} <span class="count-wrapper">
-            <span class="gen-count-badge">(${genCaptured} / ${genPokemonList.length})</span>
-            <span class="percentage-text">0%</span></span>`;
+        title.appendChild(document.createTextNode(`${gen.label} `));
+        const countWrapper = document.createElement('span');
+        countWrapper.className = 'count-wrapper';
+        const genCountBadge = document.createElement('span');
+        genCountBadge.className = 'gen-count-badge';
+        genCountBadge.textContent = `(${genCaptured} / ${genPokemonList.length})`;
+        const percentText = document.createElement('span');
+        percentText.className = 'percentage-text';
+        percentText.textContent = '0%';
+        countWrapper.appendChild(genCountBadge);
+        countWrapper.appendChild(percentText);
+        title.appendChild(countWrapper);
 
         block.appendChild(title);
         block.appendChild(grid);

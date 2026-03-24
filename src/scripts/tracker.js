@@ -1,11 +1,5 @@
 import { db, ref, get, update, auth, signInWithEmailAndPassword, onAuthStateChanged } from "../lib/firebase.js";
-
-// Función de escape HTML para prevenir XSS
-function escapeHTML(str) {
-    const div = document.createElement('div');
-    div.textContent = str;
-    return div.innerHTML;
-}
+import { escapeHTML } from "../lib/utils.js";
 
 // Estado Global en Caché (Sobrevive a los cambios de pestaña)
 let globalUsersData = {};
@@ -19,7 +13,6 @@ let dataLoaded = false;
 onAuthStateChanged(auth, (user) => {
     if (user) {
         isAdmin = true;
-        console.log("🔓 MODO ADMIN ACTIVADO (Usuario Autenticado)");
         // Si el usuario está viendo el tracker ahora mismo, le mostramos el botón
         const adminBtn = document.getElementById('adminSaveBtn');
         if (adminBtn) adminBtn.style.display = 'block';
@@ -45,20 +38,47 @@ document.addEventListener('astro:page-load', () => {
     // Comprobar Login por URL
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.get('admin') === 'true' && !auth.currentUser) {
-        setTimeout(() => {
-            const email = prompt("📧 ZONA ADMIN\nIntroduce tu CORREO de administrador:");
-            if (email) {
-                const password = prompt("🔒 ZONA ADMIN\nIntroduce tu CONTRASEÑA:");
-                if (password) {
-                    signInWithEmailAndPassword(auth, email, password)
-                        .then(() => { alert("✅ Acceso concedido. Conectado a la base de datos."); })
-                        .catch((error) => {
-                            console.error("Error Auth:", error);
-                            alert("❌ Error: Correo o contraseña incorrectos.");
-                        });
+        const loginModal = document.getElementById('admin-login-modal');
+        const loginForm = document.getElementById('admin-login-form');
+        const loginError = document.getElementById('admin-login-error');
+        const closeLoginBtn = document.getElementById('close-admin-modal');
+
+        if (loginModal) {
+            loginModal.classList.remove('hidden');
+            setTimeout(() => loginModal.classList.add('active'), 10);
+        }
+
+        if (loginForm) {
+            loginForm.onsubmit = async (e) => {
+                e.preventDefault();
+                const email = document.getElementById('admin-email').value;
+                const password = document.getElementById('admin-password').value;
+                const loginBtn = document.getElementById('admin-login-btn');
+                if (loginBtn) loginBtn.textContent = '⏳ Verificando...';
+                try {
+                    await signInWithEmailAndPassword(auth, email, password);
+                    if (loginModal) {
+                        loginModal.classList.remove('active');
+                        setTimeout(() => loginModal.classList.add('hidden'), 300);
+                    }
+                } catch (err) {
+                    if (loginError) {
+                        loginError.textContent = '❌ Correo o contraseña incorrectos.';
+                        loginError.style.display = 'block';
+                    }
+                    if (loginBtn) loginBtn.textContent = 'Iniciar sesión';
                 }
-            }
-        }, 500);
+            };
+        }
+
+        if (closeLoginBtn) {
+            closeLoginBtn.onclick = () => {
+                if (loginModal) {
+                    loginModal.classList.remove('active');
+                    setTimeout(() => loginModal.classList.add('hidden'), 300);
+                }
+            };
+        }
     }
 
     // Botones de navegación de mes
@@ -132,7 +152,12 @@ function updateMonthUI() {
     const monthCapitalized = monthName.charAt(0).toUpperCase() + monthName.slice(1);
     const year = currentTrackerDate.getFullYear();
 
-    monthDisplay.innerHTML = `${monthCapitalized} <span style="margin-left: 10px;">${year}</span>`;
+    monthDisplay.textContent = '';
+    monthDisplay.appendChild(document.createTextNode(monthCapitalized + ' '));
+    const yearSpan = document.createElement('span');
+    yearSpan.style.marginLeft = '10px';
+    yearSpan.textContent = year;
+    monthDisplay.appendChild(yearSpan);
 
     const isStartLimit = (year === 2026 && currentTrackerDate.getMonth() === 0);
 
@@ -166,15 +191,13 @@ function updateMonthUI() {
     const formattedDateKey = `${year}-${monthNum}`;
 
     if (displayedCaptures.length > 0 || Object.keys(globalUsersData).length > 0) {
-        if (displayedCaptures.length !== 0 || Object.keys(globalUsersData).length !== 0) {
-            renderMonth(formattedDateKey);
-        }
+        renderMonth(formattedDateKey);
     }
 }
 
 async function loadData() {
     try {
-        console.log("📡 Cargando datos...");
+
         const snapshot = await get(ref(db, 'users'));
         const data = snapshot.val();
 
