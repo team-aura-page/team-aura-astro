@@ -28,3 +28,375 @@ import Layout from "../layouts/Layout.astro";
         import "../scripts/shinydex.js";
     </script>
 </Layout>
+
+<style is:global>
+.shinydex-content {
+    max-width: 1200px;
+    width: 100%;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+.shinydex-body {
+    display: grid;
+    grid-template-columns: 1fr 60px;
+    gap: 20px;
+    align-items: start;
+    position: relative;
+}
+
+.search-wrapper {
+    text-align: center;
+    margin-top: 35px;
+    margin-bottom: 25px;
+    padding: 0 20px;
+}
+
+#search {
+    width: 100%;
+    max-width: 420px;
+    padding: 12px 15px;
+    border-radius: 8px;
+    background-color: #1a1a1a;
+    border: 2px solid #ffcc00;
+    color: #ffffff;
+    font-family: 'PokemonFireRed', monospace;
+    font-size: 1.1rem;
+    outline: none;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.5);
+    transition: all 0.3s ease;
+}
+
+#search:focus {
+    background-color: #2a2a2a;
+    box-shadow: 0 0 15px rgba(255, 204, 0, 0.4);
+    transform: translateY(-3px);
+}
+
+#shiny-counter {
+    font-weight: bold;
+    color: #ffcc00;
+    font-size: 1.2rem;
+    transition: color 0.5s ease;
+}
+
+.gen-block {
+    margin-bottom: 60px;
+    scroll-margin-top: 110px;
+}
+
+.gen-title {
+    color: #ffcc00;
+    border-left: 4px solid #ffcc00;
+    padding-left: 15px;
+    margin-bottom: 20px;
+    font-size: 2rem;
+    text-align: left;
+}
+
+.count-wrapper {
+    display: inline-flex;
+    align-items: center;
+    transition: color 0.3s ease;
+}
+
+.percentage-text {
+    font-size: 1rem;
+    margin-left: 10px;
+    padding: 2px 8px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 4px;
+    min-width: 50px;
+    text-align: center;
+}
+
+.shinydex-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+    gap: 15px;
+}
+
+/* --- CARDS (REVELADO PROGRESIVO) --- */
+.shiny-card {
+    position: relative;
+    background: #1a1a1a;
+    border: 2px solid #333;
+    border-radius: 12px;
+    padding: 30px 10px 15px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+    min-height: 140px;
+    overflow: hidden;
+    filter: grayscale(100%);
+    opacity: 0;
+    transform: translateY(20px);
+    pointer-events: none;
+    transition: transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275),
+        box-shadow 0.3s ease,
+        filter 0.3s ease,
+        opacity 0.6s ease-out;
+}
+
+.shiny-card.visible {
+    opacity: 0.3;
+    transform: translateY(0);
+}
+
+.shiny-card.captured.visible,
+.shiny-card.captured-live-no.visible {
+    opacity: 1;
+    pointer-events: auto;
+    filter: grayscale(0%);
+}
+
+.shiny-card.captured {
+    border-color: #4caf50;
+    background: radial-gradient(circle at center, #1e2a1e 0%, #1a1a1a 100%);
+    animation: aura-pulse 3s infinite ease-in-out;
+}
+
+.shiny-card.captured-live-no {
+    border-color: #ffd700;
+    background: radial-gradient(circle at center, #2e2a15 0%, #1a1a1a 100%);
+    animation: aura-pulse-yellow 3s infinite ease-in-out;
+}
+
+.shiny-card.captured::after,
+.shiny-card.captured-live-no::after {
+    content: "";
+    position: absolute;
+    top: -50%;
+    left: -150%;
+    width: 200%;
+    height: 200%;
+    background: linear-gradient(115deg, transparent 0%, transparent 40%, rgba(255, 255, 255, 0.15) 50%, transparent 60%, transparent 100%);
+    animation: metallic-shine 5s infinite linear;
+    pointer-events: none;
+}
+
+@keyframes aura-pulse {
+
+    0%,
+    100% {
+        box-shadow: 0 0 15px rgba(74, 175, 80, 0.4);
+    }
+
+    50% {
+        box-shadow: 0 0 25px rgba(74, 175, 80, 0.7);
+    }
+}
+
+@keyframes aura-pulse-yellow {
+
+    0%,
+    100% {
+        box-shadow: 0 0 15px rgba(255, 215, 0, 0.3);
+    }
+
+    50% {
+        box-shadow: 0 0 25px rgba(255, 215, 0, 0.6);
+    }
+}
+
+@keyframes metallic-shine {
+    0% {
+        left: -150%;
+    }
+
+    20%,
+    100% {
+        left: 100%;
+    }
+}
+
+.shiny-card.captured:hover,
+.shiny-card.captured-live-no:hover {
+    transform: scale(1.1) translateY(-5px);
+    z-index: 10;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7);
+    cursor: url('../icons/cursorDef.png') 0 0, pointer;
+}
+
+.shiny-card.captured:hover .trainer-tooltip {
+    opacity: 1;
+    visibility: visible;
+    transform: translateX(-50%) translateY(0);
+}
+
+.shinydex-index {
+    position: sticky;
+    top: 120px;
+    margin-top: 75px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    z-index: 100;
+}
+
+.shinydex-index a {
+    text-decoration: none;
+    color: #ffcc00;
+    border: 2px solid #ffcc00;
+    border-radius: 8px;
+    width: 42px;
+    height: 42px;
+    display: grid;
+    place-items: center;
+    font-weight: bold;
+    background: #000;
+    transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275),
+        background 0.3s ease,
+        color 0.3s ease,
+        box-shadow 0.3s ease,
+        opacity 0.5s ease;
+
+    opacity: 0;
+    transform: translateX(30px) scale(0.5);
+    pointer-events: none;
+}
+
+.shinydex-index a.reveal {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+    pointer-events: auto;
+}
+
+.shinydex-index a.reveal:hover {
+    transform: scale(1) translateX(-5px);
+    background: #ffcc00;
+    color: #000;
+    box-shadow: 0 0 20px rgba(255, 204, 0, 0.6);
+    cursor: url('../icons/cursorDef.png') 0 0, pointer;
+}
+
+.shinydex-index a.active {
+    background: #ffcc00;
+    color: #000;
+    box-shadow: 0 0 15px rgba(255, 204, 0, 0.5);
+    transform: scale(1.1);
+}
+
+/* --- SPRITES --- */
+.sprite-wrapper {
+    width: 80px;
+    height: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 5px;
+    position: relative;
+}
+
+.sprite-wrapper img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    image-rendering: pixelated;
+    filter: drop-shadow(0 3px 3px rgba(0, 0, 0, 0.6));
+    transition: transform 0.3s ease;
+}
+
+.shiny-card.captured:hover .sprite-wrapper img {
+    transform: scale(1.1) translateY(-5px);
+    filter: drop-shadow(0 8px 6px rgba(0, 0, 0, 0.8));
+}
+
+.poke-number {
+    position: absolute;
+    top: 5px;
+    font-size: 0.90rem;
+    font-weight: bold;
+    color: #ffffff;
+}
+
+.poke-name {
+    color: #ffffff;
+    font-size: 0.85rem;
+    font-weight: bold;
+    text-align: center;
+    margin-top: auto;
+    width: 100%;
+}
+
+#global-tooltip {
+    position: fixed;
+    top: 0;
+    left: 0;
+    transition: opacity 0.15s ease, visibility 0.15s ease;
+
+    will-change: transform;
+
+    background-color: rgba(15, 15, 15, 0.95);
+    border: 1px solid #ffd700;
+    border-radius: 8px;
+    padding: 12px 15px;
+    z-index: 99999;
+    pointer-events: none;
+    opacity: 0;
+    visibility: hidden;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+    min-width: 180px;
+    text-align: center;
+    backdrop-filter: blur(5px);
+}
+
+#global-tooltip.visible {
+    opacity: 1;
+    visibility: visible;
+}
+
+#global-tooltip .tooltip-title {
+    display: block;
+    color: #ffd700;
+    font-family: 'Segoe UI', sans-serif;
+    font-weight: 700;
+    text-transform: uppercase;
+    font-size: 0.9rem;
+    margin-bottom: 8px;
+    border-bottom: 1px solid #444;
+    padding-bottom: 5px;
+    letter-spacing: 1.5px;
+}
+
+#global-tooltip .tooltip-scroll-mask {
+    max-height: 125px;
+    overflow: hidden;
+    position: relative;
+    mask-image: linear-gradient(to bottom, black 85%, transparent 100%);
+    -webkit-mask-image: linear-gradient(to bottom, black 85%, transparent 100%);
+}
+
+#global-tooltip .tooltip-names {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    color: #fff;
+    font-size: 1.1rem;
+    font-weight: 500;
+    will-change: transform;
+}
+
+#global-tooltip .tooltip-names li {
+    padding: 2px 0;
+}
+
+#global-tooltip .tooltip-names.scrolling {
+    animation: vertical-scroll 12s ease-in-out infinite alternate;
+}
+
+@keyframes vertical-scroll {
+
+    0%,
+    5% {
+        transform: translateY(0);
+    }
+
+    95%,
+    100% {
+        transform: translateY(calc(-100% + 125px));
+    }
+}
+
+</style>

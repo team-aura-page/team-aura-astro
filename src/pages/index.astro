@@ -126,4 +126,63 @@ import Layout from "../layouts/Layout.astro";
 		white-space: nowrap;
 		border: 0;
 	}
+
+	.about-section p {
+	    font-size: 1.5rem;
+	    line-height: 1.8;
+	    margin-bottom: 15px;
+	    color: var(--text-white);
+	    max-width: 90%;
+	    margin-left: auto;
+	    margin-right: auto;
+	}
+
+	.about-section h2 {
+	    font-size: 2.2rem;
+	}
+
+	.staff-section {
+	    margin-top: 30px;
+	    margin-bottom: 60px;
+	    text-align: center;
+	}
+
+	.videos-section {
+	    margin: 40px auto;
+	    text-align: center;
+	    max-width: 800px;
+	    padding: 0 20px;
+	}
+
+	.section-title {
+	    font-size: 2.3rem;
+	    margin-bottom: 20px;
+	}
+
+	.video-responsive {
+	    position: relative;
+	    padding-bottom: 56.25%;
+	    height: 0;
+	    overflow: hidden;
+	    border-radius: 12px;
+	    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+	}
+
+	.video-responsive iframe {
+	    position: absolute;
+	    top: 0;
+	    left: 0;
+	    width: 100%;
+	    height: 100%;
+	}
+
+	@media (max-width: 600px) {
+	    .about-section h2 {
+	        font-size: 1.8rem;
+	    }
+	    .about-section p {
+	        font-size: 1.2rem;
+	        max-width: 100%;
+	    }
+	}
 </style>

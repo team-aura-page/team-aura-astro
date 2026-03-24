@@ -84,6 +84,40 @@ import Layout from "../layouts/Layout.astro";
 </Layout>
 
 <style>
+    .modal-overlay {
+        position: fixed;
+        top: 0; left: 0; width: 100%; height: 100%;
+        background: rgba(0, 0, 0, 0.8);
+        backdrop-filter: blur(5px);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 9999;
+    }
+    .modal-overlay.hidden {
+        display: none;
+    }
+    .modal-content {
+        background: #111;
+        border: 2px solid var(--gold);
+        padding: 30px;
+        border-radius: 12px;
+        position: relative;
+        width: 100%;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+    }
+    .close-btn {
+        position: absolute;
+        top: 10px;
+        right: 15px;
+        font-size: 1.5rem;
+        cursor: pointer;
+        color: #888;
+        transition: color 0.2s;
+    }
+    .close-btn:hover {
+        color: #f44336;
+    }
     .admin-modal-title {
         color: var(--gold);
         margin-bottom: 20px;
@@ -126,4 +160,402 @@ import Layout from "../layouts/Layout.astro";
         text-align: center;
         font-size: 0.9rem;
     }
+</style>
+
+<style is:global>
+/* =========================================
+   ESTILOS ESPECÍFICOS DEL TRACKER (Blindados 🛡️)
+   ========================================= */
+
+.tracker-content-container {
+    padding: 2rem;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.tracker-header-controls {
+    text-align: center;
+    padding: 2rem;
+    border-radius: 15px;
+    margin-bottom: 2rem;
+}
+
+.tracker-main-title {
+    font-size: 3rem;
+    margin-bottom: 10px;
+    color: white;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+}
+
+.tracker-subtitle {
+    color: #bbb;
+}
+
+.tracker-grid-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 25px;
+    padding: 10px;
+}
+
+/* ============================
+   TARJETAS ÚNICAS DEL TRACKER
+   ============================ */
+.tracker-poke-card {
+    background: linear-gradient(180deg, #1e1e1e 0%, #151515 100%);
+    border-radius: 12px;
+    padding: 15px;
+    text-align: center;
+    border: 1px solid #333;
+    transition: all 0.2s ease-in-out;
+    position: relative;
+    overflow: hidden;
+
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.tracker-poke-card:hover {
+    transform: translateY(-5px) scale(1.02);
+    border-color: #00bcd4;
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.5);
+}
+
+
+
+.tracker-poke-sprite {
+    height: 90px;
+    width: 100%;
+    object-fit: scale-down;
+    filter: drop-shadow(0 5px 5px rgba(0, 0, 0, 0.5));
+    transition: transform 0.3s;
+
+    display: block;
+    margin: 0 auto 10px auto;
+
+    image-rendering: pixelated;
+}
+
+.tracker-poke-card:hover .tracker-poke-sprite {
+    transform: scale(1.1);
+}
+
+.tracker-trainer-text {
+    color: #00bcd4;
+    font-weight: 700;
+    font-size: 1.2rem;
+    margin: 2px 0;
+    letter-spacing: 0.5px;
+}
+
+.tracker-date-badge {
+    color: #fff;
+    font-size: 0.9rem;
+    background: #333;
+    padding: 4px 12px;
+    border-radius: 50px;
+    display: inline-block;
+    border: 1px solid #444;
+}
+
+.tracker-stats-wrapper {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    margin-bottom: 25px;
+    font-size: 1.4rem;
+    font-weight: bold;
+}
+
+.tracker-stat-item {
+    font-size: 2rem;
+}
+
+/* =========================================
+   ESTILOS DEL MODO ADMIN Y ZONA RARE
+   ========================================= */
+
+#adminSaveBtn {
+    background: #e91e63;
+    color: white;
+    border: none;
+    padding: 12px 25px;
+    font-size: 1rem;
+    cursor: url('../icons/cursorDef.png') 0 0, pointer;
+    margin: 15px auto;
+    border-radius: 8px;
+    font-weight: bold;
+    box-shadow: 0 4px 0 #c2185b;
+    transition: all 0.2s;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    display: block;
+}
+
+#adminSaveBtn:hover {
+    transform: translateY(2px);
+    box-shadow: 0 2px 0 #c2185b;
+    background: #f06292;
+}
+
+#adminSaveBtn:active {
+    transform: translateY(4px);
+    box-shadow: none;
+}
+
+#rareZone {
+    margin-bottom: 40px;
+    margin-top: 40px;
+    padding: 25px;
+    border-radius: 20px;
+    background: rgba(255, 215, 0, 0.05);
+    position: relative;
+
+    border: 2px dashed #ffd700;
+    box-shadow: 0 0 20px rgba(255, 215, 0, 0.2);
+
+    animation: glowPulse 4s infinite ease-in-out;
+}
+
+@keyframes glowPulse {
+    0% {
+        box-shadow: 0 0 20px rgba(255, 215, 0, 0.2);
+        border-color: #ffd700;
+        transform: scale(1);
+    }
+
+    50% {
+        box-shadow: 0 0 40px rgba(255, 215, 0, 0.6), inset 0 0 15px rgba(255, 215, 0, 0.1);
+        border-color: #fff8c0;
+    }
+
+    100% {
+        box-shadow: 0 0 20px rgba(255, 215, 0, 0.2);
+        border-color: #ffd700;
+        transform: scale(1);
+    }
+}
+
+#rareZone h2 {
+    color: #ffd700;
+    text-align: center;
+    margin-top: 0;
+    margin-bottom: 20px;
+    text-transform: uppercase;
+    font-size: 1.8rem;
+    text-shadow: 0 0 10px rgba(255, 215, 0, 0.8), 0 0 20px rgba(255, 215, 0, 0.4);
+}
+
+.rare-header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 30px;
+}
+
+.tracker-poke-card.is-rare {
+    border: 2px solid #ffd700 !important;
+    box-shadow: 0 0 15px rgba(255, 215, 0, 0.6);
+}
+
+.tracker-poke-card.is-rare:hover {
+    box-shadow: 0 0 25px rgba(255, 215, 0, 0.9);
+    transform: translateY(-5px) scale(1.03);
+}
+
+/* Icono flotante para Secret/Alpha/Etc en el Tracker */
+.tracker-special-icon {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 24px;
+    height: 24px;
+    z-index: 10;
+    object-fit: contain;
+    filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.6));
+
+    transition: transform 0.3s ease;
+}
+
+.tracker-poke-card:hover .tracker-special-icon {
+    transform: scale(1.2) rotate(10deg);
+}
+
+.new-shinydex-icon {
+    position: absolute;
+    top: 3px;
+    left: 8px;
+    width: 32px;
+    height: 32px;
+    z-index: 10;
+    object-fit: contain;
+    filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.6));
+    transition: transform 0.3s ease;
+}
+
+.tracker-poke-card:hover .new-shinydex-icon {
+    transform: scale(1.2) rotate(-10deg);
+}
+
+#normalTitle {
+    color: #777;
+    text-align: center;
+    font-size: 1rem;
+    margin-bottom: 20px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    opacity: 0.8;
+}
+
+
+
+/* =========================================
+   ESTILOS DEL LEADERBOARD / TOP
+   ========================================= */
+
+.tracker-leaderboard {
+    display: flex;
+    gap: 15px;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin-top: 10px;
+    margin-bottom: 15px;
+}
+
+.leaderboard-item {
+    background: rgba(0, 0, 0, 0.3);
+    padding: 8px 20px;
+    border-radius: 20px;
+    border: 1px solid #333;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 1.1rem;
+    font-weight: bold;
+    transition: transform 0.2s;
+}
+
+.leaderboard-item:hover {
+    transform: scale(1.05);
+}
+
+.rank-1 {
+    border-color: #ffd700;
+    box-shadow: 0 0 10px rgba(255, 215, 0, 0.2);
+    color: #ffd700;
+    background: rgba(255, 215, 0, 0.1);
+}
+
+.rank-2 {
+    border-color: #c0c0c0;
+    box-shadow: 0 0 10px rgba(192, 192, 192, 0.2);
+    color: #e0e0e0;
+    background: rgba(192, 192, 192, 0.1);
+}
+
+.rank-3 {
+    border-color: #cd7f32;
+    box-shadow: 0 0 10px rgba(205, 127, 50, 0.2);
+    color: #ffb74d;
+    background: rgba(205, 127, 50, 0.1);
+}
+
+.rank-text {
+    color: white;
+    font-weight: normal;
+    font-size: 0.9em;
+}
+
+.rank-count {
+    background: rgba(255, 255, 255, 0.1);
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 0.9rem;
+}
+
+/* =========================================
+   NUEVA NAVEGACIÓN DE MESES (FLECHAS)
+   ========================================= */
+
+.month-navigation-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+    margin-top: 20px;
+    background: rgba(0, 0, 0, 0.2);
+    padding: 10px 20px;
+    border-radius: 50px;
+    display: inline-flex;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.nav-arrow-btn {
+    background: transparent;
+    border: none;
+    border-radius: 0;
+    color: #888;
+
+    width: auto;
+    height: auto;
+    padding: 10px;
+
+    cursor: url('../icons/cursorDef.png') 0 0, pointer;
+    font-size: 1.8rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: color 0.2s ease;
+}
+
+.nav-arrow-btn:hover {
+    color: #ffffff;
+    background: transparent;
+}
+
+@keyframes moveLeft {
+
+    0%,
+    100% {
+        transform: translateX(0);
+    }
+
+    50% {
+        transform: translateX(-5px);
+    }
+}
+
+@keyframes moveRight {
+
+    0%,
+    100% {
+        transform: translateX(0);
+    }
+
+    50% {
+        transform: translateX(5px);
+    }
+}
+
+.month-navigation-container .nav-arrow-btn:first-child:hover {
+    animation: moveLeft 0.6s ease-in-out infinite;
+}
+
+.month-navigation-container .nav-arrow-btn:last-child:hover {
+    animation: moveRight 0.6s ease-in-out infinite;
+}
+
+.month-display-text {
+    margin: 0;
+    font-size: 1.8rem;
+    color: white;
+    text-transform: capitalize;
+    min-width: 200px;
+    text-align: center;
+    font-family: 'PokemonFireRed', monospace;
+}
+
 </style>

@@ -1,4 +1,4 @@
-import { db, ref, get, update, auth, signInWithEmailAndPassword, onAuthStateChanged } from "../lib/firebase.js";
+import { app, db, ref, get, update } from "../lib/firebase.js";
 import { escapeHTML } from "../lib/utils.js";
 
 // Estado Global en Caché (Sobrevive a los cambios de pestaña)
@@ -9,18 +9,39 @@ let currentTrackerDate = new Date();
 let firstCaptureDates = {};
 let dataLoaded = false;
 
-// 3. Listener de Sesión Global
-onAuthStateChanged(auth, (user) => {
-    if (user) {
-        isAdmin = true;
-        // Si el usuario está viendo el tracker ahora mismo, le mostramos el botón
-        const adminBtn = document.getElementById('adminSaveBtn');
-        if (adminBtn) adminBtn.style.display = 'block';
-        updateMonthUI();
-    } else {
-        isAdmin = false;
-    }
-});
+// Variables Globales de Auth Asíncrono
+let authInitialized = false;
+let authInstance = null;
+
+async function initFirebaseAuth() {
+    if (authInitialized) return { auth: authInstance, signInWithEmailAndPassword: null }; // Evitar reimportar si ya está
+
+    // Dynamic import del objeto de Auth
+    const { getAuth, signInWithEmailAndPassword, onAuthStateChanged } = await import('firebase/auth');
+    authInstance = getAuth(app);
+    authInitialized = true;
+
+    // Listener asíncrono configurado una sola vez
+    onAuthStateChanged(authInstance, (user) => {
+        if (user) {
+            isAdmin = true;
+            localStorage.setItem('auraAdmin', '1');
+            const adminBtn = document.getElementById('adminSaveBtn');
+            if (adminBtn) adminBtn.style.display = 'block';
+            updateMonthUI();
+        } else {
+            isAdmin = false;
+            localStorage.removeItem('auraAdmin');
+        }
+    });
+
+    return { auth: authInstance, signInWithEmailAndPassword };
+}
+
+// Carga Temprana (Eager Loading): Solo si el usuario era Admin la última vez que visitó
+if (typeof localStorage !== 'undefined' && localStorage.getItem('auraAdmin') === '1') {
+    initFirebaseAuth();
+}
 
 
 // 4. EVENTO ASTRO: Se ejecuta al entrar a la página Tracker
@@ -37,11 +58,14 @@ document.addEventListener('astro:page-load', () => {
 
     // Comprobar Login por URL
     const urlParams = new URLSearchParams(window.location.search);
-    if (urlParams.get('admin') === 'true' && !auth.currentUser) {
+    if (urlParams.get('admin') === 'true' && (!authInstance || !authInstance.currentUser)) {
         const loginModal = document.getElementById('admin-login-modal');
         const loginForm = document.getElementById('admin-login-form');
         const loginError = document.getElementById('admin-login-error');
         const closeLoginBtn = document.getElementById('close-admin-modal');
+
+        // Empezamos a cargar el SDK de Firebase invisiblemente por si deciden iniciar sesión
+        initFirebaseAuth();
 
         if (loginModal) {
             loginModal.classList.remove('hidden');
@@ -51,17 +75,23 @@ document.addEventListener('astro:page-load', () => {
         if (loginForm) {
             loginForm.onsubmit = async (e) => {
                 e.preventDefault();
-                const email = document.getElementById('admin-email').value;
+                const emailInput = document.getElementById('admin-email');
+                const email = emailInput ? emailInput.value.trim() : '';
                 const password = document.getElementById('admin-password').value;
                 const loginBtn = document.getElementById('admin-login-btn');
-                if (loginBtn) loginBtn.textContent = '⏳ Verificando...';
+                if (loginBtn) loginBtn.textContent = '⏳ Cargando sistema. Verificando...';
+
                 try {
+                    // Garantizamos que Firebase está descargado antes de continuar
+                    const { auth, signInWithEmailAndPassword } = await initFirebaseAuth();
+
                     await signInWithEmailAndPassword(auth, email, password);
                     if (loginModal) {
                         loginModal.classList.remove('active');
                         setTimeout(() => loginModal.classList.add('hidden'), 300);
                     }
                 } catch (err) {
+                    console.error("Login Error:", err);
                     if (loginError) {
                         loginError.textContent = '❌ Correo o contraseña incorrectos.';
                         loginError.style.display = 'block';
@@ -249,7 +279,12 @@ async function loadData() {
     } catch (error) {
         console.error("Error cargando:", error);
         const normalGrid = document.getElementById('trackerGrid');
-        if (normalGrid) normalGrid.innerHTML = '<p>Error cargando datos.</p>';
+        if (normalGrid) {
+            normalGrid.innerHTML = '';
+            const p = document.createElement('p');
+            p.textContent = 'Error cargando datos.';
+            normalGrid.appendChild(p);
+        }
     }
 }
 
@@ -357,6 +392,8 @@ function renderMonth(selectedMonth) {
     }
 
     let hasRares = false;
+    const rareFragment = document.createDocumentFragment();
+    const normalFragment = document.createDocumentFragment();
 
     filtered.forEach(capture => {
         const isRare = capture.rarity === 'rare';
@@ -394,11 +431,14 @@ function renderMonth(selectedMonth) {
         }
 
         if (isRare) {
-            if (rareGrid) rareGrid.appendChild(card);
+            rareFragment.appendChild(card);
         } else {
-            if (normalGrid) normalGrid.appendChild(card);
+            normalFragment.appendChild(card);
         }
     });
+
+    if (rareGrid) rareGrid.appendChild(rareFragment);
+    if (normalGrid) normalGrid.appendChild(normalFragment);
 
     if (hasRares || isAdmin) {
         if (rareZone) rareZone.style.display = 'block';
@@ -429,6 +469,7 @@ function createCard(capture) {
     if (capture.icono && SPECIAL_ICONS[capture.icono]) {
         const iconImg = document.createElement('img');
         iconImg.src = SPECIAL_ICONS[capture.icono];
+        iconImg.loading = 'lazy';
         iconImg.className = 'tracker-special-icon';
         iconImg.alt = escapeHTML(capture.icono);
         iconImg.title = `Shiny Especial: ${escapeHTML(capture.icono)}`;
@@ -444,6 +485,7 @@ function createCard(capture) {
     if (capture.newShinydex === true || (isAutoNew && capture.newShinydex !== false)) {
         const newImg = document.createElement('img');
         newImg.src = '/icons/new.png';
+        newImg.loading = 'lazy';
         newImg.className = 'new-shinydex-icon';
         newImg.alt = 'Nuevo Shinydex';
         newImg.title = '¡Nuevo en la Shinydex!';
@@ -453,6 +495,7 @@ function createCard(capture) {
     if (capture.safari === 'flee') {
         const deadImg = document.createElement('img');
         deadImg.src = '/icons/dead.png';
+        deadImg.loading = 'lazy';
         deadImg.className = 'tracker-special-icon';
         deadImg.alt = 'Flee';
         deadImg.title = '¡Huyó en el Safari!';
@@ -462,6 +505,7 @@ function createCard(capture) {
     // Sprite principal
     const spriteImg = document.createElement('img');
     spriteImg.src = spriteUrl;
+    spriteImg.loading = 'lazy';
     spriteImg.alt = pokeName;
     spriteImg.className = 'tracker-poke-sprite';
     if (capture.safari === 'flee') {

@@ -95,3 +95,316 @@ import Layout from "../layouts/Layout.astro";
         import "../scripts/showcase.js";
     </script>
 </Layout>
+
+<style is:global>
+/* =========================================
+   6. MODAL (POPUP)
+   ========================================= */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.85);
+
+    /* Layout */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+
+    /* ESTADO INICIAL (Cerrado/Invisible) */
+    opacity: 0;
+    visibility: hidden;
+    backdrop-filter: blur(4px);
+
+    /* Transición suave para el fondo negro */
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+.modal-overlay.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+
+.modal-content {
+    background-color: var(--bg-panel);
+    padding: 30px;
+    border-radius: 20px;
+    border: 4px solid var(--gold);
+    width: 90%;
+    max-width: 1100px;
+    position: relative;
+    box-shadow: 0 0 30px rgba(255, 204, 0, 0.3);
+    text-align: center;
+
+    transform: scale(0.8) translateY(30px);
+    opacity: 0;
+
+    transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275),
+        opacity 0.3s ease;
+}
+
+.modal-overlay.active .modal-content {
+    transform: scale(1) translateY(0);
+    opacity: 1;
+}
+
+.close-btn {
+    position: absolute;
+    top: 20px;
+    right: 25px;
+    font-size: 2.5rem;
+    color: var(--gold);
+    cursor: url('../icons/cursorDef.png') 0 0, pointer;
+    line-height: 1;
+    z-index: 10;
+    transition: color 0.2s;
+}
+
+.close-btn:hover {
+    color: #ffffff;
+}
+
+.hidden {
+    display: none !important;
+}
+
+html.no-scroll,
+body.no-scroll {
+    overflow: hidden;
+}
+
+.modal-divider {
+    border: 0;
+    height: 2px;
+    background: var(--gold);
+    margin: 20px 0;
+    opacity: 0.5;
+}
+
+/* --- CABECERA DEL MODAL --- */
+.modal-header-redesigned {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 25px;
+    padding: 0 10px;
+    position: relative;
+    min-height: 180px;
+}
+
+.modal-avatar-wrapper {
+    flex: 0 0 180px;
+    height: 180px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.modal-avatar-wrapper img {
+    height: 100%;
+    width: auto;
+    object-fit: contain;
+    image-rendering: pixelated;
+    filter: drop-shadow(0 0 15px rgba(0, 0, 0, 0.6));
+    transition: transform 0.3s ease;
+}
+
+.modal-avatar-wrapper img:hover {
+    transform: scale(1.1);
+}
+
+
+/* --- CUERPO DEL MODAL (Grid y Leyenda) --- */
+.modal-body-wrapper {
+    display: flex;
+    gap: 20px;
+    align-items: flex-start;
+    width: 100%;
+}
+
+.pokemon-team-grid {
+    flex: 1;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 15px;
+    align-items: center;
+
+    max-height: 400px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 10px;
+
+    scrollbar-width: thin;
+    scrollbar-color: var(--gold) var(--bg-panel);
+}
+
+.pokemon-team-grid::-webkit-scrollbar {
+    width: 8px;
+}
+
+.pokemon-team-grid::-webkit-scrollbar-thumb {
+    background: var(--gold);
+    border-radius: 10px;
+}
+
+/* =========================================
+   7. LEYENDA (SIDEBAR)
+   ========================================= */
+.legend-sidebar {
+    width: 200px;
+    background-color: #1a1a1a;
+    border: 2px solid var(--gold);
+    border-radius: 10px;
+    padding: 15px 10px 15px 35px;
+    flex-shrink: 0;
+    box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.8);
+    margin-right: 40px;
+}
+
+.legend-sidebar h4 {
+    color: var(--gold);
+    font-size: 1.2rem;
+    text-align: center;
+    border-bottom: 1px solid #444;
+    padding-bottom: 5px;
+    margin-bottom: 10px;
+
+    margin-left: -20px;
+    width: calc(100% + 10px);
+}
+
+.sidebar-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 8px;
+    color: var(--text-white);
+    font-size: 1rem;
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
+.sidebar-icon {
+    width: 32px;
+    height: 32px;
+    object-fit: contain;
+    filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.5));
+}
+
+
+/* =========================================
+   8. POKEMON OVERLAYS (Iconos sobre Sprites)
+   ========================================= */
+.poke-overlay-container {
+    position: relative;
+    display: inline-block;
+    margin: 5px;
+}
+
+/* --- SPRITE BASE --- */
+.poke-base-sprite {
+    display: block;
+    transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+/* Estilo para Pokémon huídos (Safari) */
+.poke-base-sprite.poke-fled {
+    filter: grayscale(100%);
+    opacity: 0.6;
+}
+
+.poke-sparkle-effect {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) rotate(180deg);
+
+    width: 140%;
+    height: 140%;
+    object-fit: contain;
+
+    opacity: 0;
+    pointer-events: none;
+    z-index: 15;
+    transition: opacity 0.3s ease;
+
+    filter: sepia(100%) saturate(600%) hue-rotate(15deg) brightness(120%);
+}
+
+.poke-legend-icon {
+    position: absolute;
+    top: 0px;
+    right: 0px;
+    width: 28px;
+    height: 28px;
+    object-fit: contain;
+    z-index: 10;
+    filter: drop-shadow(1px 1px 0px rgba(0, 0, 0, 0.8));
+}
+
+.poke-overlay-container:hover .poke-base-sprite:not(.poke-fled) {
+    transform: scale(1.2);
+    filter: drop-shadow(0 0 3px rgba(255, 255, 255, 0.6));
+    position: relative;
+    z-index: 8;
+}
+
+.poke-overlay-container:hover .poke-sparkle-effect {
+    opacity: 1;
+}
+
+.poke-overlay-container:hover .poke-base-sprite.poke-fled~.poke-sparkle-effect {
+    display: none;
+    opacity: 0;
+}
+
+/* =========================================
+   9. RESPONSIVE GLOBAL
+   ========================================= */
+@media (max-width: 800px) {
+    .modal-header-redesigned {
+        flex-direction: column;
+        gap: 10px;
+        min-height: auto;
+    }
+
+    .modal-avatar-wrapper {
+        flex: 0 0 120px;
+        height: 120px;
+    }
+
+    .modal-title-large {
+        font-size: 2rem;
+    }
+
+    .modal-body-wrapper {
+        flex-direction: column;
+    }
+
+    .pokemon-team-grid {
+        width: 100%;
+        margin-bottom: 20px;
+    }
+
+    .legend-sidebar {
+        width: 100%;
+        margin-right: 0;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        padding: 10px;
+        gap: 10px;
+    }
+
+    .legend-sidebar h4 {
+        grid-column: span 2;
+        margin-left: 0;
+        width: 100%;
+    }
+}
+
+</style>

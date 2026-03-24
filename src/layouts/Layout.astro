@@ -1,6 +1,7 @@
 ---
 import { ClientRouter } from "astro:transitions";
 import Stars from "../components/Stars.astro";
+import Nav from "../components/Nav.astro";
 
 interface Props {
     title: string;
@@ -49,59 +50,94 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
     </head>
 
     <body class={bodyClass}>
-        <nav class="main-nav">
-            <a
-                href="/"
-                class={`nav-item nav-start ${currentPath === "/" ? "active" : ""}`}
-            >
-                <img
-                    src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/premier-ball.png"
-                    alt="Inicio"
-                />
-                <span>Team Aura</span>
-            </a>
+        <Nav />
 
-            <a
-                href="/showcase"
-                class={`nav-item ${currentPath.includes("/showcase") ? "active" : ""}`}
-            >
-                <img src="/icons/showcase-ribbon.png" alt="Showcase" />
-                <span>Showcase</span>
-            </a>
-
-            <a
-                href="/shinywar"
-                class={`nav-item ${currentPath.includes("/shinywar") ? "active" : ""}`}
-            >
-                <img
-                    src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/lucky-punch.png"
-                    alt="ShinyWar"
-                />
-                <span>ShinyWar</span>
-            </a>
-
-            <a
-                href="/shinydex"
-                class={`nav-item ${currentPath.includes("/shinydex") ? "active" : ""}`}
-            >
-                <img src="/icons/shinydex.png" alt="Shinydex" />
-                <span>ShinyDex</span>
-            </a>
-
-            <a
-                href="/tracker"
-                class={`nav-item ${currentPath.includes("/tracker") ? "active" : ""}`}
-            >
-                <img src="/icons/rotom.png" alt="Tracker" />
-                <span>Tracker</span>
-            </a>
-        </nav>
-
-        <slot />
+        <div style="view-transition-name: page-content; display: flow-root;">
+            <slot />
+        </div>
 
         <Stars />
         <script>
             import "../scripts/cursors.js";
+
+            let currentDirection = '';
+
+            document.addEventListener('astro:before-preparation', (e: any) => {
+                currentDirection = '';
+                const toPath = new URL(e.to).pathname;
+
+                const navOrder = ['/', '/showcase', '/shinywar', '/shinydex', '/tracker'];
+                const getIndex = (path: string) => navOrder.findIndex(p => p !== '/' ? path.startsWith(p) : path === '/');
+                
+                const fromIndex = getIndex(window.location.pathname);
+                const toIndex = getIndex(toPath);
+
+                if (fromIndex !== -1 && toIndex !== -1 && fromIndex !== toIndex) {
+                    currentDirection = toIndex > fromIndex ? 'forward' : 'backward';
+                }
+
+                if (currentDirection) {
+                    document.documentElement.dataset.navDirection = currentDirection;
+                } else {
+                    delete document.documentElement.dataset.navDirection;
+                }
+            });
+
+            document.addEventListener('astro:before-swap', (e: any) => {
+                if (currentDirection) {
+                    e.newDocument.documentElement.dataset.navDirection = currentDirection;
+                }
+            });
         </script>
     </body>
 </html>
+
+<style is:global>
+    /* Desactivar el rebote del grupo para evitar movimientos verticales de la página entera o del contenedor */
+    ::view-transition-group(root),
+    ::view-transition-group(page-content) {
+        animation: none;
+    }
+
+    /* Asegurar que el contenido se ancle arriba y no provoque saltos extraños si las páginas miden diferente */
+    ::view-transition-old(page-content),
+    ::view-transition-new(page-content) {
+        mix-blend-mode: normal;
+        object-position: top left;
+        object-fit: none;
+        height: 100%;
+        width: 100%;
+    }
+
+    /* Navegación hacia la derecha (forward) */
+    html[data-nav-direction="forward"]::view-transition-old(page-content) {
+        animation: pt-slide-out-left 0.25s ease both, pt-fade-out 0.15s ease both;
+    }
+    html[data-nav-direction="forward"]::view-transition-new(page-content) {
+        animation: pt-slide-in-right 0.3s ease 0.25s both;
+    }
+
+    /* Navegación hacia la izquierda (backward) */
+    html[data-nav-direction="backward"]::view-transition-old(page-content) {
+        animation: pt-slide-out-right 0.25s ease both, pt-fade-out 0.15s ease both;
+    }
+    html[data-nav-direction="backward"]::view-transition-new(page-content) {
+        animation: pt-slide-in-left 0.3s ease 0.25s both;
+    }
+
+    @keyframes pt-fade-out {
+        to { opacity: 0; }
+    }
+    @keyframes pt-slide-out-left {
+        to { transform: translateX(-50px); }
+    }
+    @keyframes pt-slide-in-right {
+        from { transform: translateX(50px); opacity: 0; }
+    }
+    @keyframes pt-slide-out-right {
+        to { transform: translateX(50px); }
+    }
+    @keyframes pt-slide-in-left {
+        from { transform: translateX(-50px); opacity: 0; }
+    }
+</style>

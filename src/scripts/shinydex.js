@@ -59,7 +59,9 @@ onValue(usersRef, (snapshot) => {
     // Si estamos en la ShinyDex ahora mismo, repintamos
     if (document.getElementById("shinydex-main")) {
         createGlobalTooltip();
-        initShinyDex(globalDexData);
+        setTimeout(() => {
+            initShinyDex(globalDexData);
+        }, 80);
     }
 });
 
@@ -79,7 +81,12 @@ document.addEventListener('astro:page-load', () => {
 
     // 2. Si ya hay datos en caché, renderizamos inmediatamente
     if (globalDexData.size > 0) {
-        initShinyDex(globalDexData);
+        // SOLUCIÓN 1: Retrasar el render síncrono para permitir que
+        // la animación fluya a 60fps sin tirones durante el slide-in.
+        // La animación dura ~300ms, así que esperamos 350ms.
+        setTimeout(() => {
+            initShinyDex(globalDexData);
+        }, 350);
     }
 
     // 3. Conectamos el buscador
@@ -232,7 +239,7 @@ function hideTooltip() {
     if (tooltipElement) tooltipElement.classList.remove('visible');
 }
 
-function initShinyDex(dexData) {
+async function initShinyDex(dexData) {
     const main = document.getElementById("shinydex-main");
     const index = document.getElementById("shinydex-index");
     const counterGlobal = document.getElementById("shiny-counter");
@@ -248,7 +255,9 @@ function initShinyDex(dexData) {
     main.innerHTML = "";
     index.innerHTML = "";
 
-    GENERATIONS.forEach((gen, gIndex) => {
+    // SOLUCIÓN 2: Bucle for asíncrono (Time Slicing) para no congelar navegadores
+    for (let gIndex = 0; gIndex < GENERATIONS.length; gIndex++) {
+        const gen = GENERATIONS[gIndex];
         const genPokemonList = GEN1_5_POKEMON.filter(p => p.id >= gen.min && p.id <= gen.max);
         let genCaptured = 0;
 
@@ -329,7 +338,12 @@ function initShinyDex(dexData) {
         link.href = `#gen-${gIndex}`;
         link.textContent = gen.short;
         index.appendChild(link);
-    });
+
+        // Cedemos el hilo al navegador 5 milisegundos para que 
+        // pinte y estabilice la pantalla antes de atragantarse con la 
+        // siguiente generación completa
+        await new Promise(resolve => setTimeout(resolve, 5));
+    }
 
     setTimeout(() => {
         const totalPokes = GEN1_5_POKEMON.length;
