@@ -11,10 +11,10 @@ interface Props {
 const {
     title,
     bodyClass,
-    description = "Web oficial del Team Aura en PokeMMO. Ranking de Shinys, ShinyWar, Tracker y utilidades para entrenadores."
+    description = "Web oficial del Team Aura en PokeMMO. Ranking de Shinys, ShinyWar, Tracker y utilidades para entrenadores.",
 } = Astro.props;
 const currentPath = Astro.url.pathname;
-const canonicalURL = new URL(Astro.url.pathname, Astro.site || "https://teamaura.pokemmo.eu");
+const canonicalURL = new URL(Astro.url.pathname, Astro.site);
 ---
 
 <!doctype html>
@@ -42,6 +42,7 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site || "https://teamaura
         <link rel="canonical" href={canonicalURL.href} />
         <meta name="robots" content="index, follow" />
 
+        <link rel="preconnect" href="https://raw.githubusercontent.com" />
         <link rel="stylesheet" href="/css/style.css" />
         <link rel="icon" type="image/x-icon" href="/favicon.ico" />
     </head>

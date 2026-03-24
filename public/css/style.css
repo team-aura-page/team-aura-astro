@@ -48,8 +48,12 @@ input[type="checkbox"],
     font-style: normal;
 }
 
+html,
 body {
     cursor: var(--cursor-random) 0 0, auto;
+}
+
+body {
     background-color: var(--bg-dark);
     color: var(--text-white);
     font-family: 'PokemonFireRed', 'Courier New', monospace;
@@ -2128,6 +2132,7 @@ h4 {
     font-family: 'PokemonFireRed', monospace;
 }
 
+html.system-mode,
 body.system-mode,
 body.system-mode * {
     cursor: auto !important;
