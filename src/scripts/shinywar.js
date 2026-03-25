@@ -141,6 +141,8 @@ function initWar(mainData, warsData) {
 
         roster.sort((a, b) => b.score - a.score);
 
+        const fragment = document.createDocumentFragment();
+
         roster.forEach(player => {
             const card = document.createElement('div');
             card.className = 'war-card';
@@ -148,6 +150,7 @@ function initWar(mainData, warsData) {
 
             const avatarImg = document.createElement('img');
             avatarImg.src = player.avatar;
+            avatarImg.loading = 'lazy';
             avatarImg.className = 'war-avatar';
             avatarImg.alt = escapeHTML(player.nombre);
             avatarImg.onerror = () => { avatarImg.src = '/icons/unown.png'; };
@@ -171,9 +174,11 @@ function initWar(mainData, warsData) {
             card.appendChild(avatarImg);
             card.appendChild(infoDiv);
 
-            if (teamLetter === 'A' && containerA) containerA.appendChild(card);
-            else if (teamLetter === 'B' && containerB) containerB.appendChild(card);
+            fragment.appendChild(card);
         });
+
+        if (teamLetter === 'A' && containerA) containerA.appendChild(fragment);
+        else if (teamLetter === 'B' && containerB) containerB.appendChild(fragment);
 
         return teamTotalScore;
     };
@@ -250,6 +255,7 @@ function openModal(player) {
         listContainer.appendChild(emptyP);
     } else {
         const sortedCaptures = [...player.captures].reverse();
+        const fragment = document.createDocumentFragment();
 
         sortedCaptures.forEach(cap => {
             const row = document.createElement('div');
@@ -261,6 +267,7 @@ function openModal(player) {
 
             const iconImg = document.createElement('img');
             iconImg.src = pokeIcon;
+            iconImg.loading = 'lazy';
             iconImg.className = 'cap-icon';
             iconImg.alt = escapeHTML(pokeName);
             iconImg.onerror = () => { iconImg.src = '/icons/unown.png'; };
@@ -292,8 +299,10 @@ function openModal(player) {
             row.appendChild(iconImg);
             row.appendChild(infoDiv);
             row.appendChild(pointsDiv);
-            listContainer.appendChild(row);
+            fragment.appendChild(row);
         });
+
+        listContainer.appendChild(fragment);
     }
 
     modal.classList.remove('hidden');

@@ -121,6 +121,7 @@ document.addEventListener('astro:page-load', () => {
             const imgPoke = document.createElement('img');
             const nameClean = (poke.pokemon || 'unknown').toLowerCase().trim();
             imgPoke.src = `${URL_SHINY}${nameClean}.gif`;
+            imgPoke.loading = 'lazy';
             imgPoke.alt = nameClean;
             imgPoke.className = 'poke-base-sprite';
             // Fallback para imágenes externas (#19)
@@ -132,6 +133,7 @@ document.addEventListener('astro:page-load', () => {
 
             const imgSparkle = document.createElement('img');
             imgSparkle.src = fixPath('icons/sparkle.gif');
+            imgSparkle.loading = 'lazy';
             imgSparkle.className = 'poke-sparkle-effect';
 
             container.onmouseenter = () => { imgSparkle.src = fixPath('icons/sparkle.gif'); };
@@ -142,6 +144,7 @@ document.addEventListener('astro:page-load', () => {
             if (poke.icono && ICON_URLS[poke.icono]) {
                 const imgIcon = document.createElement('img');
                 imgIcon.src = ICON_URLS[poke.icono];
+                imgIcon.loading = 'lazy';
                 imgIcon.className = 'poke-legend-icon';
                 container.appendChild(imgIcon);
             }
@@ -224,6 +227,7 @@ function renderShowcase(jugadores) {
         avatarContainer.className = 'staff-avatar-container';
         const avatarImg = document.createElement('img');
         avatarImg.src = avatarUrl;
+        avatarImg.loading = 'lazy';
         avatarImg.alt = escapeHTML(jugador.nombre);
         avatarImg.onerror = () => { avatarImg.src = fixPath(null); }; // Fallback (#19)
         avatarContainer.appendChild(avatarImg);

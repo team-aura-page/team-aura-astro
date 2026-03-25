@@ -11,6 +11,9 @@
 /icons/*
   Cache-Control: public, max-age=31536000, immutable
 
+/entrenadores/*
+  Cache-Control: public, max-age=31536000, immutable
+
 /font/*
   Cache-Control: public, max-age=31536000, immutable
 
