@@ -14,8 +14,16 @@ const {
     bodyClass,
     description = "Web oficial del Team Aura en PokeMMO. Ranking de Shinys, ShinyWar, Tracker y utilidades para entrenadores.",
 } = Astro.props;
-const currentPath = Astro.url.pathname;
-const canonicalURL = new URL(Astro.url.pathname, Astro.site);
+
+// Construcción de URLs absolutas para SEO y Redes Sociales
+const canonicalURL = new URL(
+    Astro.url.pathname,
+    Astro.site || Astro.url.origin,
+);
+const ogImageURL = new URL(
+    "/icons/logotipo_aura.png",
+    Astro.site || Astro.url.origin,
+);
 ---
 
 <!doctype html>
@@ -27,23 +35,19 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
         <ClientRouter />
         <meta name="description" content={description} />
 
-        <!-- SEO: Open Graph -->
         <meta property="og:title" content={title} />
         <meta property="og:description" content={description} />
         <meta property="og:type" content="website" />
         <meta property="og:url" content={canonicalURL.href} />
-        <meta property="og:image" content="/icons/logotipo_aura.png" />
+        <meta property="og:image" content={ogImageURL.href} />
 
-        <!-- SEO: Twitter Card -->
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content={title} />
         <meta name="twitter:description" content={description} />
+        <meta name="twitter:image" content={ogImageURL.href} />
 
-        <!-- SEO: Canonical -->
         <link rel="canonical" href={canonicalURL.href} />
         <meta name="robots" content="index, follow" />
-
-        <link rel="preconnect" href="https://raw.githubusercontent.com" />
 
         <link
             rel="preload"
@@ -54,7 +58,7 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
         />
 
         <link rel="stylesheet" href="/css/style.css" />
-        <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+        <link rel="icon" href="/favicon.ico" sizes="any" />
         <meta name="theme-color" content="#121212" />
     </head>
 
