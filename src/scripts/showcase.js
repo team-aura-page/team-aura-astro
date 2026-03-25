@@ -106,6 +106,11 @@ document.addEventListener('astro:page-load', () => {
 
     openModal = function (jugador) {
         if (!modal) return;
+
+        const nav = document.querySelector('.main-nav');
+        if (nav) nav.style.zIndex = '0';
+
+
         document.getElementById('modal-name').textContent = escapeHTML(jugador.nombre);
         // Usamos la nueva función para el avatar
         document.getElementById('modal-avatar').src = getAvatarPath(jugador.avatar);
@@ -161,6 +166,9 @@ document.addEventListener('astro:page-load', () => {
     };
 
     closeModalAction = function () {
+
+        const nav = document.querySelector('.main-nav');
+        if (nav) nav.style.zIndex = '';
         document.documentElement.classList.remove('no-scroll');
         document.body.classList.remove('no-scroll');
         if (modal) {
