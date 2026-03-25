@@ -95,17 +95,19 @@ function initWar(mainData, warsData) {
                 p && p.nombre && p.nombre.toLowerCase() === trainerName.toLowerCase()
             );
 
-            // RUTA ABSOLUTA ASTRO
+            // RUTA POR DEFECTO (Fallback)
             let avatar = '/icons/unown.png';
-            if (profile) {
-                // Función para arreglar rutas relativas guardadas en Firebase si las hubiera
-                avatar = profile.avatar.startsWith('http') ? profile.avatar : profile.avatar.replace(/^(\.\.\/|\.\/)/, '/');
+
+            if (profile && profile.avatar) {
+                const fileName = profile.avatar.split('/').pop();
+                avatar = `/entrenadores/${fileName}`;
+
             } else {
                 const guests = activeWar.guests || {};
                 const guestKey = Object.keys(guests).find(k => k.toLowerCase() === trainerName.toLowerCase());
-
                 if (guestKey) {
-                    avatar = guests[guestKey];
+                    const guestFileName = guests[guestKey].split('/').pop();
+                    avatar = `/entrenadores/${guestFileName}`;
                 }
             }
 
@@ -263,7 +265,7 @@ function openModal(player) {
             row.style.borderLeftColor = teamColor;
 
             const pokeName = cap.pokemon || 'unknown';
-            const pokeIcon = `https://play.pokemonshowdown.com/sprites/gen5ani-shiny/${pokeName.toLowerCase()}.gif`;
+            const pokeIcon = `shinys/${pokeName.toLowerCase()}.gif`;
 
             const iconImg = document.createElement('img');
             iconImg.src = pokeIcon;

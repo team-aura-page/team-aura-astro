@@ -454,14 +454,14 @@ function createCard(capture) {
     card.className = 'tracker-poke-card';
 
     const pokeName = (capture.pokemon || 'unown').toLowerCase();
-    const spriteUrl = `https://play.pokemonshowdown.com/sprites/gen5ani-shiny/${pokeName}.gif`;
+    const spriteUrl = `/shinys/${pokeName}.gif`;
 
     // RUTAS ABSOLUTAS (Astro public folder)
     const SPECIAL_ICONS = {
         'secret': '/icons/secretshiny.png',
         'alpha': '/icons/alfa.png',
-        'fossil': 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/helix-fossil.png',
-        'safari': 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/safari-ball.png',
+        'fossil': '/icons/fossil.png',
+        'safari': '/icons/safari.png',
         'egg': '/icons/eggshiny.png'
     };
 

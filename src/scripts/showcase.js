@@ -1,30 +1,41 @@
 import { db, ref, onValue } from "../lib/firebase.js";
 import { escapeHTML } from "../lib/utils.js";
 
-const REPO_URL = "https://raw.githubusercontent.com/team-aura-page/TeamAura/main/";
-const URL_SHINY = "https://play.pokemonshowdown.com/sprites/gen5ani-shiny/";
-
-function fixPath(path) {
-    if (!path) return REPO_URL + 'icons/unown.png';
-    if (path.startsWith('http')) return path;
-    const cleanPath = path.replace(/^(\.\.\/|\.\/)/, '');
-    return REPO_URL + cleanPath;
-}
-
+// --- 1. RUTAS LOCALES ---
 const ICON_URLS = {
-    "fossil": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/helix-fossil.png",
-    "safari": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/safari-ball.png",
-    "secret": fixPath("icons/secretshiny.png"),
-    "alpha": fixPath("icons/alfa.png"),
-    "egg": fixPath("icons/eggshiny.png"),
-    "swarm": fixPath("icons/swarm.png")
+    "fossil": "/icons/fossil.png", // Asumo que guardaste estos también en tu carpeta icons
+    "safari": "/icons/safari.png",
+    "secret": "/icons/secretshiny.png",
+    "alpha": "/icons/alfa.png",
+    "egg": "/icons/eggshiny.png",
+    "swarm": "/icons/swarm.png"
 };
 
+// Funciones limpias para obtener las rutas locales
+function getAvatarPath(avatarStr) {
+    if (!avatarStr) return '/icons/unown.png';
+
+    const fileName = avatarStr.split('/').pop();
+
+    // Si detectamos que es el Unown, forzamos la ruta a la carpeta icons
+    if (fileName === 'unown.png') {
+        return '/icons/unown.png';
+    }
+
+    return `/entrenadores/${fileName}`;
+}
+
+function getPokemonPath(pokeName) {
+    const nameClean = (pokeName || 'unknown').toLowerCase().trim();
+    // Asume que bajaste los sprites animados en formato .gif
+    return `/shinys/${nameClean}.gif`;
+}
+
 // Precargamos el sparkle compartido una sola vez
-new Image().src = fixPath('icons/sparkle.gif');
+new Image().src = '/icons/sparkle.gif';
 const preloadedPlayers = new Set();
 
-// Mantener los datos en caché para no pedir a la base de datos al cambiar de pestaña
+// Mantener los datos en caché
 let allPlayersData = [];
 const usersRef = ref(db, 'users');
 
@@ -34,24 +45,18 @@ onValue(usersRef, (snapshot) => {
 
     allPlayersData = Array.isArray(data) ? data : Object.values(data);
 
-    // Si la tabla del showcase está en pantalla ahora mismo, la actualizamos
     if (document.getElementById('showcase-grid')) {
         renderShowcase(allPlayersData);
-
     }
 });
 
-// Evitar que el evento del teclado 'Escape' se acumule
 let isEscListenerAdded = false;
-
-// Funciones del modal como closures en vez de window globals (#13)
 let openModal = null;
 let closeModalAction = null;
 
-// EVENTO MÁGICO DE ASTRO: Se ejecuta cada vez que el usuario entra al Showcase
+// EVENTO MÁGICO DE ASTRO
 document.addEventListener('astro:page-load', () => {
     const grid = document.getElementById('showcase-grid');
-    // Si estamos en la página de inicio, detenemos la ejecución de este bloque
     if (!grid) return;
 
     const searchInput = document.getElementById('search-input');
@@ -59,12 +64,10 @@ document.addEventListener('astro:page-load', () => {
     const modal = document.getElementById('modal-overlay');
     const closeBtn = document.getElementById('close-btn');
 
-    // Si ya teníamos datos bajados de Firebase, pintamos inmediatamente
     if (allPlayersData.length > 0) {
         renderShowcase(allPlayersData);
     }
 
-    // Reconectar eventos sin duplicarlos (#14) — clonar nodos para limpiar listeners previos
     if (searchInput) {
         const newSearchInput = searchInput.cloneNode(true);
         searchInput.parentNode.replaceChild(newSearchInput, searchInput);
@@ -101,11 +104,11 @@ document.addEventListener('astro:page-load', () => {
         renderShowcase(filteredList);
     }
 
-    // Lógica del Modal (#13: no más window.openModal)
     openModal = function (jugador) {
         if (!modal) return;
         document.getElementById('modal-name').textContent = escapeHTML(jugador.nombre);
-        document.getElementById('modal-avatar').src = fixPath(jugador.avatar);
+        // Usamos la nueva función para el avatar
+        document.getElementById('modal-avatar').src = getAvatarPath(jugador.avatar);
 
         const teamGrid = document.getElementById('modal-team');
         teamGrid.innerHTML = '';
@@ -119,12 +122,11 @@ document.addEventListener('astro:page-load', () => {
             container.className = 'poke-overlay-container';
 
             const imgPoke = document.createElement('img');
-            const nameClean = (poke.pokemon || 'unknown').toLowerCase().trim();
-            imgPoke.src = `${URL_SHINY}${nameClean}.gif`;
+            // Usamos la nueva función para el Pokémon
+            imgPoke.src = getPokemonPath(poke.pokemon);
             imgPoke.loading = 'lazy';
-            imgPoke.alt = nameClean;
+            imgPoke.alt = (poke.pokemon || 'unknown').toLowerCase().trim();
             imgPoke.className = 'poke-base-sprite';
-            // Fallback para imágenes externas (#19)
             imgPoke.onerror = () => { imgPoke.style.opacity = '0.3'; };
 
             if (poke.safari === "flee") {
@@ -132,18 +134,18 @@ document.addEventListener('astro:page-load', () => {
             }
 
             const imgSparkle = document.createElement('img');
-            imgSparkle.src = fixPath('icons/sparkle.gif');
+            imgSparkle.src = '/icons/sparkle.gif'; // Ruta local
             imgSparkle.loading = 'lazy';
             imgSparkle.className = 'poke-sparkle-effect';
 
-            container.onmouseenter = () => { imgSparkle.src = fixPath('icons/sparkle.gif'); };
+            container.onmouseenter = () => { imgSparkle.src = '/icons/sparkle.gif'; };
 
             container.appendChild(imgPoke);
             container.appendChild(imgSparkle);
 
             if (poke.icono && ICON_URLS[poke.icono]) {
                 const imgIcon = document.createElement('img');
-                imgIcon.src = ICON_URLS[poke.icono];
+                imgIcon.src = ICON_URLS[poke.icono]; // Ruta local desde el diccionario
                 imgIcon.loading = 'lazy';
                 imgIcon.className = 'poke-legend-icon';
                 container.appendChild(imgIcon);
@@ -181,7 +183,6 @@ document.addEventListener('astro:page-load', () => {
     }
 });
 
-// Función pura de renderizado
 function renderShowcase(jugadores) {
     const grid = document.getElementById('showcase-grid');
     if (!grid) return;
@@ -220,20 +221,21 @@ function renderShowcase(jugadores) {
         const card = document.createElement('div');
         card.className = 'staff-card';
 
-        const avatarUrl = fixPath(jugador.avatar);
+        // Usamos la nueva función para el avatar de la tarjeta
+        const avatarUrl = getAvatarPath(jugador.avatar);
 
-        // Construimos el contenido de la tarjeta de forma segura (#3: sin innerHTML con datos de usuario)
         const avatarContainer = document.createElement('div');
         avatarContainer.className = 'staff-avatar-container';
         const avatarImg = document.createElement('img');
         avatarImg.src = avatarUrl;
         avatarImg.loading = 'lazy';
         avatarImg.alt = escapeHTML(jugador.nombre);
-        avatarImg.onerror = () => { avatarImg.src = fixPath(null); }; // Fallback (#19)
+        // Fallback local por si el entrenador no tiene imagen
+        avatarImg.onerror = () => { avatarImg.src = '/icons/unown.png'; };
         avatarContainer.appendChild(avatarImg);
 
         const nameH3 = document.createElement('h3');
-        nameH3.textContent = jugador.nombre; // textContent = seguro contra XSS
+        nameH3.textContent = jugador.nombre;
 
         const counterP = document.createElement('p');
         counterP.className = `shiny-counter ${rankClass}`;
@@ -249,7 +251,8 @@ function renderShowcase(jugadores) {
             (jugador.equipo || []).forEach(poke => {
                 if (poke.live === 'no') return;
                 const img = new Image();
-                img.src = `${URL_SHINY}${(poke.pokemon || 'unknown').toLowerCase().trim()}.gif`;
+                // Precarga usando la ruta local
+                img.src = getPokemonPath(poke.pokemon);
             });
         };
         card.onclick = () => openModal(jugador);

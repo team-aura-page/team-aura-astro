@@ -1,7 +1,7 @@
 import { db, ref, onValue } from "../lib/firebase.js";
 import { GEN1_5_POKEMON } from "../data/pokemon-gen1-5.js";
 
-const URL_SHINY = "https://play.pokemonshowdown.com/sprites/gen5ani-shiny/";
+const URL_SHINY = "/shinys/";
 
 const GENERATIONS = [
     { label: "Generación 1", short: "01", min: 1, max: 151 },
