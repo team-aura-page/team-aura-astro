@@ -44,6 +44,15 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
         <meta name="robots" content="index, follow" />
 
         <link rel="preconnect" href="https://raw.githubusercontent.com" />
+
+        <link
+            rel="preload"
+            href="/font/PokemonFireRed.otf"
+            as="font"
+            type="font/opentype"
+            crossorigin
+        />
+
         <link rel="stylesheet" href="/css/style.css" />
         <link rel="icon" type="image/x-icon" href="/favicon.ico" />
         <meta name="theme-color" content="#121212" />
@@ -60,32 +69,48 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
         <script>
             import "../scripts/cursors.js";
 
-            let currentDirection = '';
+            let currentDirection = "";
 
-            document.addEventListener('astro:before-preparation', (e: any) => {
-                currentDirection = '';
+            document.addEventListener("astro:before-preparation", (e: any) => {
+                currentDirection = "";
                 const toPath = new URL(e.to).pathname;
 
-                const navOrder = ['/', '/showcase', '/shinywar', '/shinydex', '/tracker'];
-                const getIndex = (path: string) => navOrder.findIndex(p => p !== '/' ? path.startsWith(p) : path === '/');
-                
+                const navOrder = [
+                    "/",
+                    "/showcase",
+                    "/shinywar",
+                    "/shinydex",
+                    "/tracker",
+                ];
+                const getIndex = (path: string) =>
+                    navOrder.findIndex((p) =>
+                        p !== "/" ? path.startsWith(p) : path === "/",
+                    );
+
                 const fromIndex = getIndex(window.location.pathname);
                 const toIndex = getIndex(toPath);
 
-                if (fromIndex !== -1 && toIndex !== -1 && fromIndex !== toIndex) {
-                    currentDirection = toIndex > fromIndex ? 'forward' : 'backward';
+                if (
+                    fromIndex !== -1 &&
+                    toIndex !== -1 &&
+                    fromIndex !== toIndex
+                ) {
+                    currentDirection =
+                        toIndex > fromIndex ? "forward" : "backward";
                 }
 
                 if (currentDirection) {
-                    document.documentElement.dataset.navDirection = currentDirection;
+                    document.documentElement.dataset.navDirection =
+                        currentDirection;
                 } else {
                     delete document.documentElement.dataset.navDirection;
                 }
             });
 
-            document.addEventListener('astro:before-swap', (e: any) => {
+            document.addEventListener("astro:before-swap", (e: any) => {
                 if (currentDirection) {
-                    e.newDocument.documentElement.dataset.navDirection = currentDirection;
+                    e.newDocument.documentElement.dataset.navDirection =
+                        currentDirection;
                 }
             });
         </script>
@@ -111,7 +136,9 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
 
     /* Navegación hacia la derecha (forward) */
     html[data-nav-direction="forward"]::view-transition-old(page-content) {
-        animation: pt-slide-out-left 0.25s ease both, pt-fade-out 0.15s ease both;
+        animation:
+            pt-slide-out-left 0.25s ease both,
+            pt-fade-out 0.15s ease both;
     }
     html[data-nav-direction="forward"]::view-transition-new(page-content) {
         animation: pt-slide-in-right 0.3s ease 0.25s both;
@@ -119,25 +146,39 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
 
     /* Navegación hacia la izquierda (backward) */
     html[data-nav-direction="backward"]::view-transition-old(page-content) {
-        animation: pt-slide-out-right 0.25s ease both, pt-fade-out 0.15s ease both;
+        animation:
+            pt-slide-out-right 0.25s ease both,
+            pt-fade-out 0.15s ease both;
     }
     html[data-nav-direction="backward"]::view-transition-new(page-content) {
         animation: pt-slide-in-left 0.3s ease 0.25s both;
     }
 
     @keyframes pt-fade-out {
-        to { opacity: 0; }
+        to {
+            opacity: 0;
+        }
     }
     @keyframes pt-slide-out-left {
-        to { transform: translateX(-50px); }
+        to {
+            transform: translateX(-50px);
+        }
     }
     @keyframes pt-slide-in-right {
-        from { transform: translateX(50px); opacity: 0; }
+        from {
+            transform: translateX(50px);
+            opacity: 0;
+        }
     }
     @keyframes pt-slide-out-right {
-        to { transform: translateX(50px); }
+        to {
+            transform: translateX(50px);
+        }
     }
     @keyframes pt-slide-in-left {
-        from { transform: translateX(-50px); opacity: 0; }
+        from {
+            transform: translateX(-50px);
+            opacity: 0;
+        }
     }
 </style>
