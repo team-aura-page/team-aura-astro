@@ -86,7 +86,7 @@ document.addEventListener('astro:page-load', () => {
         // La animación dura ~300ms, así que esperamos 350ms.
         setTimeout(() => {
             initShinyDex(globalDexData);
-        }, 350);
+        }, 200);
     }
 
     // 3. Conectamos el buscador

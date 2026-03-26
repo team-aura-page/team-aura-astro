@@ -7,10 +7,7 @@ const currentPath = Astro.url.pathname;
         href="/"
         class={`nav-item nav-start ${currentPath === "/" ? "active" : ""}`}
     >
-        <img
-            src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/premier-ball.png"
-            alt="Inicio"
-        />
+        <img src="/icons/premier-ball.png" alt="Inicio" />
         <span>Team Aura</span>
     </a>
     <a
@@ -24,10 +21,7 @@ const currentPath = Astro.url.pathname;
         href="/shinywar"
         class={`nav-item ${currentPath.includes("/shinywar") ? "active" : ""}`}
     >
-        <img
-            src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/lucky-punch.png"
-            alt="ShinyWar"
-        />
+        <img src="/icons/punch.png" alt="ShinyWar" />
         <span>ShinyWar</span>
     </a>
     <a
