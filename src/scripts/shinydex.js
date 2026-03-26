@@ -21,6 +21,11 @@ let tooltipElement = null;
 let revealObserver = null;
 let scrollSpyObserver = null;
 
+// Variables para el throttle del tooltip con RAF
+let _tooltipRafId = null;
+let _pendingX = 0;
+let _pendingY = 0;
+
 // Escuchamos a Firebase
 const usersRef = ref(db, 'users');
 onValue(usersRef, (snapshot) => {
@@ -79,11 +84,14 @@ document.addEventListener('astro:page-load', () => {
     // 1. Tooltip
     createGlobalTooltip();
 
+    // 1.5 Delegación de Eventos para el Tooltip
+    // Escuchamos los eventos de ratón en el contenedor principal en lugar de en cada carta
+    main.addEventListener('mouseover', handleTooltipHover);
+    main.addEventListener('mousemove', moveTooltip);
+    main.addEventListener('mouseout', handleTooltipLeave);
+
     // 2. Si ya hay datos en caché, renderizamos inmediatamente
     if (globalDexData.size > 0) {
-        // SOLUCIÓN 1: Retrasar el render síncrono para permitir que
-        // la animación fluya a 60fps sin tirones durante el slide-in.
-        // La animación dura ~300ms, así que esperamos 350ms.
         setTimeout(() => {
             initShinyDex(globalDexData);
         }, 200);
@@ -108,9 +116,9 @@ document.addEventListener('astro:page-load', () => {
                         const matchPoke = card.dataset.searchKey ? card.dataset.searchKey.includes(searchValue) : card.textContent.toLowerCase().includes(searchValue);
 
                         let matchTrainer = false;
-                        if (card.dataset.owners) {
+                        if (card.dataset.ownersRaw) { // Cambiado a ownersRaw para mantener la compatibilidad con el buscador
                             try {
-                                const owners = JSON.parse(card.dataset.owners);
+                                const owners = JSON.parse(card.dataset.ownersRaw);
                                 matchTrainer = owners.some(o => o.toLowerCase().includes(searchValue));
                             } catch (err) {
                                 matchTrainer = false;
@@ -186,58 +194,54 @@ function createGlobalTooltip() {
     if (document.getElementById('global-tooltip')) return;
     tooltipElement = document.createElement('div');
     tooltipElement.id = 'global-tooltip';
+    tooltipElement.style.willChange = 'transform'; // Pre-composite en GPU
     document.body.appendChild(tooltipElement);
 }
 
-function showTooltip(e) {
-    const ownersData = e.currentTarget.dataset.owners;
-    if (!ownersData || !tooltipElement) return;
+// --- NUEVO MANEJO DE EVENTOS (DELEGACIÓN) ---
 
-    const owners = JSON.parse(ownersData);
+function handleTooltipHover(e) {
+    // Buscamos si el ratón está sobre una tarjeta con el atributo tooltipHtml
+    const card = e.target.closest('.shiny-card');
 
-    // Construir tooltip de forma segura contra XSS
-    tooltipElement.innerHTML = '';
+    // Si no estamos sobre una carta, o la carta no tiene el dataset pre-calculado, salimos
+    if (!card || !card.dataset.tooltipHtml || !tooltipElement) return;
 
-    const titleSpan = document.createElement('span');
-    titleSpan.className = 'tooltip-title';
-    titleSpan.textContent = `Capturado por (${owners.length})`;
+    const htmlContent = card.dataset.tooltipHtml;
 
-    const scrollMask = document.createElement('div');
-    scrollMask.className = 'tooltip-scroll-mask';
-
-    const ul = document.createElement('ul');
-    ul.className = 'tooltip-names';
-
-    owners.forEach(o => {
-        const li = document.createElement('li');
-        li.textContent = o;
-        ul.appendChild(li);
-    });
-
-    if (owners.length > 3) {
-        ul.classList.add('scrolling');
-        const duration = 2 + (owners.length * 0.8);
-        ul.style.animationDuration = `${duration}s`;
+    // Solo actualizamos el DOM si el contenido es diferente al actual (Evita repintados)
+    if (tooltipElement.innerHTML !== htmlContent) {
+        tooltipElement.innerHTML = htmlContent;
     }
-
-    scrollMask.appendChild(ul);
-    tooltipElement.appendChild(titleSpan);
-    tooltipElement.appendChild(scrollMask);
 
     tooltipElement.classList.add('visible');
     moveTooltip(e);
 }
 
-function moveTooltip(e) {
-    if (!tooltipElement) return;
-    const x = e.clientX + 15;
-    const y = e.clientY + 15;
-    tooltipElement.style.transform = `translate3d(${x}px, ${y}px, 0)`;
+function handleTooltipLeave(e) {
+    // Si salimos de una carta que tenía tooltip, lo ocultamos
+    const card = e.target.closest('.shiny-card');
+    if (card && card.dataset.tooltipHtml && tooltipElement) {
+        tooltipElement.classList.remove('visible');
+    }
 }
 
-function hideTooltip() {
-    if (tooltipElement) tooltipElement.classList.remove('visible');
+function moveTooltip(e) {
+    if (!tooltipElement || !tooltipElement.classList.contains('visible')) return;
+
+    _pendingX = e.clientX + 15;
+    _pendingY = e.clientY + 15;
+
+    // Si ya hay un frame pendiente, no encolamos otro
+    if (_tooltipRafId) return;
+
+    _tooltipRafId = requestAnimationFrame(() => {
+        tooltipElement.style.transform = `translate3d(${_pendingX}px, ${_pendingY}px, 0)`;
+        _tooltipRafId = null;
+    });
 }
+
+// ----------------------------------------------
 
 async function initShinyDex(dexData) {
     const main = document.getElementById("shinydex-main");
@@ -303,12 +307,31 @@ async function initShinyDex(dexData) {
             card.appendChild(spriteWrapper);
             card.appendChild(pokeNameSpan);
 
+            // --- MEJORA: PRE-COMPUTACIÓN DEL HTML DEL TOOLTIP ---
             if (owners.length > 0 && status === 'normal') {
-                card.dataset.owners = JSON.stringify(owners);
-                card.addEventListener('mouseenter', showTooltip);
-                card.addEventListener('mousemove', moveTooltip);
-                card.addEventListener('mouseleave', hideTooltip);
+                // Guardamos el JSON crudo por si el buscador lo necesita
+                card.dataset.ownersRaw = JSON.stringify(owners);
+
+                // Pre-calculamos clases y estilos para la animación de scroll
+                const isScrolling = owners.length > 3;
+                const duration = 2 + (owners.length * 0.8);
+                const styleAttr = isScrolling ? `style="animation-duration: ${duration}s"` : '';
+                const classAttr = isScrolling ? 'scrolling' : '';
+
+                // Generamos los <li>
+                const listItems = owners.map(o => `<li>${o}</li>`).join('');
+
+                // Guardamos el HTML completo en el dataset de la carta
+                card.dataset.tooltipHtml = `
+                    <span class="tooltip-title">Capturado por (${owners.length})</span>
+                    <div class="tooltip-scroll-mask">
+                        <ul class="tooltip-names ${classAttr}" ${styleAttr}>
+                            ${listItems}
+                        </ul>
+                    </div>
+                `;
             }
+            // ---------------------------------------------------
 
             grid.appendChild(card);
         });
