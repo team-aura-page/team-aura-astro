@@ -5,7 +5,7 @@ import sitemap from '@astrojs/sitemap';
 
 // https://astro.build/config
 export default defineConfig({
-  site: 'https://teamaura.pages.dev',
+  site: 'https://team-aura.pages.dev',
   compressHTML: true,
   integrations: [sitemap()],
 });
