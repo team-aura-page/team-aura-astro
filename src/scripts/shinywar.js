@@ -265,7 +265,7 @@ function openModal(player) {
             row.style.borderLeftColor = teamColor;
 
             const pokeName = cap.pokemon || 'unknown';
-            const pokeIcon = `shinys/${pokeName.toLowerCase()}.gif`;
+            const pokeIcon = `/shinys/${pokeName.toLowerCase()}.gif`;
 
             const iconImg = document.createElement('img');
             iconImg.src = pokeIcon;
