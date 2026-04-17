@@ -12,13 +12,15 @@ let dataLoaded = false;
 // Variables Globales de Auth Asíncrono
 let authInitialized = false;
 let authInstance = null;
+let signInFn = null;
 
 async function initFirebaseAuth() {
-    if (authInitialized) return { auth: authInstance, signInWithEmailAndPassword: null }; // Evitar reimportar si ya está
+    if (authInitialized) return { auth: authInstance, signInWithEmailAndPassword: signInFn };
 
     // Dynamic import del objeto de Auth
     const { getAuth, signInWithEmailAndPassword, onAuthStateChanged } = await import('firebase/auth');
     authInstance = getAuth(app);
+    signInFn = signInWithEmailAndPassword;
     authInitialized = true;
 
     // Listener asíncrono configurado una sola vez
