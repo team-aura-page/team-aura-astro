@@ -6,8 +6,15 @@ import Layout from "../layouts/Layout.astro";
     <main class="war-content">
         <div class="war-scoreboard">
             <div class="team-header team-a">
+                <div class="winner-crown-container">
+                    <img
+                        src="/icons/rey.png"
+                        class="winner-crown"
+                        alt="Roca del Rey"
+                    />
+                </div>
                 <h1 id="name-team-a">ARCHEOPS</h1>
-                <div class="score-box" id="score-team-a">0</div>
+                <div class="score-box winner-score" id="score-team-a">0</div>
             </div>
 
             <div class="vs-badge">
@@ -28,7 +35,7 @@ import Layout from "../layouts/Layout.astro";
 
             <img
                 src="/shinys/archeops.gif"
-                class="war-sprite sprite-left"
+                class="war-sprite sprite-left winner-sprite"
                 alt="Archeops"
             />
 
@@ -114,6 +121,33 @@ import Layout from "../layouts/Layout.astro";
     .team-header {
         text-align: center;
         flex: 1;
+        position: relative;
+    }
+
+    .winner-crown-container {
+        position: absolute;
+        top: -25px;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 5;
+    }
+
+    .winner-crown {
+        width: 32px;
+        height: auto;
+        image-rendering: pixelated;
+        filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5));
+        animation: crownFloat 2.5s ease-in-out infinite;
+    }
+
+    @keyframes crownFloat {
+        0%,
+        100% {
+            transform: translateY(0) rotate(-3deg);
+        }
+        50% {
+            transform: translateY(-6px) rotate(3deg);
+        }
     }
 
     .team-header h1 {
@@ -141,6 +175,26 @@ import Layout from "../layouts/Layout.astro";
         line-height: 1;
         color: #fff;
         font-variant-numeric: tabular-nums;
+    }
+
+    .score-box.winner-score {
+        background: linear-gradient(
+            to right,
+            var(--gold) 0%,
+            var(--gold) 20%,
+            #ffffff 25%,
+            var(--gold) 30%,
+            var(--gold) 70%,
+            #ffffff 75%,
+            var(--gold) 80%,
+            var(--gold) 100%
+        );
+        background-size: 200% auto;
+        color: transparent;
+        background-clip: text;
+        -webkit-background-clip: text;
+        animation: shineSweep 12s linear infinite;
+        filter: drop-shadow(0 0 8px rgba(255, 204, 0, 0.4));
     }
 
     .vs-badge {
@@ -217,10 +271,19 @@ import Layout from "../layouts/Layout.astro";
         z-index: 10;
         filter: drop-shadow(0 5px 5px rgba(0, 0, 0, 0.6));
         pointer-events: none;
+        transition: all 0.3s ease;
     }
 
     .sprite-left {
         left: -15px;
+    }
+
+    .sprite-left.winner-sprite {
+        height: 140px;
+        left: -35px;
+        filter: drop-shadow(0 0 5px rgba(255, 204, 0, 0.8))
+            drop-shadow(0 5px 5px rgba(0, 0, 0, 0.6));
+        clip-path: inset(2px);
     }
 
     .sprite-right {

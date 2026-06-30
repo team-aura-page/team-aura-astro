@@ -91,9 +91,10 @@ const ogImageURL = new URL(
                     "/tracker",
                 ];
                 const getIndex = (path: string) =>
-                    navOrder.findIndex((p) =>
-                        p !== "/" ? path.startsWith(p) : path === "/",
-                    );
+                    navOrder.findIndex((p) => {
+                        if (p === "/") return path === "/";
+                        return path === p || path.startsWith(p + "/");
+                    });
 
                 const fromIndex = getIndex(window.location.pathname);
                 const toIndex = getIndex(toPath);

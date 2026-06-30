@@ -5,7 +5,7 @@
     --cursor-random: auto;
     --gold: #ffcc00;
     --bg-dark: #121212;
-    --bg-panel: #2a2a2a;
+    --bg-panel: #2a2a2ad2;
     --text-white: #e0e0e0;
 }
 
@@ -70,9 +70,6 @@ body {
 body:not(.page-shinywar) {
     background-color: var(--bg-dark);
 }
-
-
-
 a {
     text-decoration: none;
     color: inherit;
@@ -129,7 +126,7 @@ h4 {
 }
 
 .page-index .content-container {
-    max-width: 1000px;
+    max-width: 1300px;
 }
 
 .page-showcase .content-container {
@@ -207,18 +204,22 @@ h4 {
 }
 
 .page-index .staff-grid {
-    max-width: 1000px;
-    grid-template-columns: repeat(4, 1fr);
+    max-width: 1250px;
+    grid-template-columns: repeat(10, 1fr);
 }
 
 .page-index .staff-grid .lider-card:nth-child(1) {
-    grid-column: span 2;
+    grid-column: span 5;
     justify-self: end;
 }
 
 .page-index .staff-grid .lider-card:nth-child(2) {
-    grid-column: span 2;
+    grid-column: span 5;
     justify-self: start;
+}
+
+.page-index .staff-grid .staff-card:not(.lider-card) {
+    grid-column: span 2;
 }
 
 .page-showcase .staff-grid {
@@ -237,6 +238,15 @@ h4 {
         grid-column: span 1;
         justify-self: center;
     }
+
+    .page-index .staff-grid .staff-card:not(.lider-card) {
+        grid-column: span 1;
+    }
+
+    /* Center the 5th recruiter (last child) since it sits on its own row */
+    .page-index .staff-grid .staff-card:not(.lider-card):last-child {
+        grid-column: span 2;
+    }
 }
 
 @media (max-width: 550px) {
@@ -246,11 +256,17 @@ h4 {
         grid-template-columns: 1fr;
         max-width: 300px;
     }
+
+    .page-index .staff-grid .lider-card:nth-child(1),
+    .page-index .staff-grid .lider-card:nth-child(2),
+    .page-index .staff-grid .staff-card:not(.lider-card) {
+        grid-column: span 1;
+    }
 }
 
 /* Estilo individual de tarjeta */
 .staff-card {
-    background: #333333;
+    background: #33333380;
     border: 3px solid var(--gold);
     border-radius: 15px;
     padding: 20px;
