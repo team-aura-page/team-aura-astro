@@ -94,50 +94,6 @@ import Layout from "../layouts/Layout.astro";
 					<h3>Polimerasa</h3>
 					<p class="role">Recruiter</p>
 				</div>
-
-				<div class="staff-card">
-					<div class="staff-avatar-container">
-						<img
-							src="/entrenadores/joker.png"
-							alt="Avatar de Joker"
-						/>
-					</div>
-					<h3>Joker</h3>
-					<p class="role">Recruiter</p>
-				</div>
-
-				<div class="staff-card">
-					<div class="staff-avatar-container">
-						<img
-							src="/entrenadores/fernan.png"
-							alt="Avatar de Fernan"
-						/>
-					</div>
-					<h3>Fernan</h3>
-					<p class="role">Recruiter</p>
-				</div>
-
-				<div class="staff-card">
-					<div class="staff-avatar-container">
-						<img
-							src="/entrenadores/jean.png"
-							alt="Avatar de Jean"
-						/>
-					</div>
-					<h3>Jean</h3>
-					<p class="role">Recruiter</p>
-				</div>
-
-				<div class="staff-card">
-					<div class="staff-avatar-container">
-						<img
-							src="/entrenadores/cuuco.png"
-							alt="Avatar de cuuco"
-						/>
-					</div>
-					<h3>Cuuco</h3>
-					<p class="role">Recruiter</p>
-				</div>
 			</div>
 		</section>
 	</main>
@@ -155,7 +111,22 @@ import Layout from "../layouts/Layout.astro";
 		white-space: nowrap;
 		border: 0;
 	}
+.staff-grid {
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: center;
+	align-items: flex-start;
+	gap: 30px;
+	max-width: 1000px;
+	margin: 0 auto;
+}
 
+.staff-card {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	text-align: center;
+}
 	.about-section {
 		max-width: 1000px;
 		margin: 0 auto;
